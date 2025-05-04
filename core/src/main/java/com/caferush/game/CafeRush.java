@@ -2,71 +2,51 @@ package com.caferush.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 
 public class CafeRush extends ApplicationAdapter {
-    private OrthographicCamera camera;
-    private ShapeRenderer shapeRenderer;
-
-    private float boxX = 100;
-    private float boxY = 100;
-    private final float boxSize = 50;
-    private final float moveSpeed = 200;
-
-    private float screenWidth;
-    private float screenHeight;
+    TiledMap tiledMap;
+    OrthographicCamera camera;
+    TiledMapRenderer tiledMapRenderer;
 
     @Override
-    public void create() {
-        screenWidth = Gdx.graphics.getWidth();
-        screenHeight = Gdx.graphics.getHeight();
+    public void create () {
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, screenWidth, screenHeight);
-
-        shapeRenderer = new ShapeRenderer();
-    }
-
-    @Override
-    public void render() {
-        handleInput(Gdx.graphics.getDeltaTime());
-
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        camera.setToOrtho(false, w, h);
         camera.update();
-        shapeRenderer.setProjectionMatrix(camera.combined);
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 1, 0, 1); // Green box
-        shapeRenderer.rect(boxX, boxY, boxSize, boxSize);
-        shapeRenderer.end();
-    }
+        tiledMap = new TmxMapLoader().load("cafe-rush-maps/Cafe with Product Options.tmx");
 
-    private void handleInput(float delta) {
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            boxY += moveSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            boxY -= moveSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            boxX -= moveSpeed * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            boxX += moveSpeed * delta;
-        }
+        float unitScale = 3.5f;
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, unitScale);
 
-        // Keep box within screen boundaries
-        boxX = Math.max(0, Math.min(boxX, screenWidth - boxSize));
-        boxY = Math.max(0, Math.min(boxY, screenHeight - boxSize));
+        int mapWidth = tiledMap.getProperties().get("width", Integer.class);
+        int mapHeight = tiledMap.getProperties().get("height", Integer.class);
+        int tileWidth = tiledMap.getProperties().get("tilewidth", Integer.class);
+        int tileHeight = tiledMap.getProperties().get("tileheight", Integer.class);
+
+        float mapPixelWidth = mapWidth * tileWidth * unitScale;
+        float mapPixelHeight = mapHeight * tileHeight * unitScale;
+
+        camera.position.set(mapPixelWidth / 2f, mapPixelHeight / 2f, 0);
+        camera.update();
     }
 
     @Override
-    public void dispose() {
-        shapeRenderer.dispose();
+    public void render () {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.update();
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
     }
 }

@@ -8,7 +8,8 @@ public class DesktopLauncher {
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("Café Rush");
-        config.setWindowedMode(1024, 768);
+        config.setResizable(false);
+        config.setWindowedMode(900, 900);
         config.useVsync(true);
         new Lwjgl3Application(new CafeRush(), config);
     }
