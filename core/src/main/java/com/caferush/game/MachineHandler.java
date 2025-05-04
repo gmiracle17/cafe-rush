@@ -51,7 +51,7 @@ public class MachineHandler {
             int tileX,
             int tileY,
             String layerName,
-            String expectedMachineType,
+            String machineType,
             String optionsLayerName,
             String optionsBoxLayerName
     ) {
@@ -62,7 +62,7 @@ public class MachineHandler {
         if (cell == null || cell.getTile() == null) return;
 
         MapProperties props = cell.getTile().getProperties();
-        if (expectedMachineType.equals(props.get("machine", String.class))) showOptions(map, optionsLayerName, optionsBoxLayerName);
+        if (machineType.equals(props.get("machine", String.class))) showOptions(map, optionsLayerName, optionsBoxLayerName);
     }
 
     private static void showOptions(TiledMap map, String optionsLayerName, String optionsBoxLayerName) {
