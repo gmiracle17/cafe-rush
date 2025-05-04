@@ -62,10 +62,7 @@ public class MachineHandler {
         if (cell == null || cell.getTile() == null) return;
 
         MapProperties props = cell.getTile().getProperties();
-        if (expectedMachineType.equals(props.get("machine", String.class))) {
-            showOptions(map, optionsLayerName, optionsBoxLayerName);
-            System.out.println(expectedMachineType + " clicked! Options layer is now visible.");
-        }
+        if (expectedMachineType.equals(props.get("machine", String.class))) showOptions(map, optionsLayerName, optionsBoxLayerName);
     }
 
     private static void showOptions(TiledMap map, String optionsLayerName, String optionsBoxLayerName) {
