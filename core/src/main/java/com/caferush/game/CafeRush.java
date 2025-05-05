@@ -14,7 +14,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private OrthographicCamera camera;
     private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer tiledMapRenderer;
-    private float unitScale = 3.5f;
+    private final float unitScale = 3.5f;
 
     @Override
     public void create() {
