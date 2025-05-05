@@ -39,6 +39,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
+
+        Vector3 worldCoords = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        int tileX = (int) (worldCoords.x / (16 * unitScale));
+        int tileY = (int) (worldCoords.y / (16 * unitScale));
+        MachineHandler.handleOptionsHover(tiledMap, tileX, tileY);
     }
 
     @Override
@@ -48,12 +53,22 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return true;
     }
 
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        Vector3 worldCoords = camera.unproject(new Vector3(screenX, screenY, 0));
+        int tileX = (int) (worldCoords.x / (16 * unitScale));
+        int tileY = (int) (worldCoords.y / (16 * unitScale));
+
+        MachineHandler.handleOptionsHover(tiledMap, tileX, tileY);
+
+        return true;
+    }
+
     @Override public boolean keyDown(int keycode) { return false; }
     @Override public boolean keyUp(int keycode) { return false; }
     @Override public boolean keyTyped(char character) { return false; }
     @Override public boolean touchUp(int x, int y, int pointer, int button) { return false; }
     @Override public boolean touchCancelled(int i, int i1, int i2, int i3) { return false; }
     @Override public boolean touchDragged(int x, int y, int pointer) { return false; }
-    @Override public boolean mouseMoved(int x, int y) { return false; }
     @Override public boolean scrolled(float amountX, float amountY) { return false; }
 }
