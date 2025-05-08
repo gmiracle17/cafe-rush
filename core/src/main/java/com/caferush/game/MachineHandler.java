@@ -7,75 +7,9 @@ import com.badlogic.gdx.math.Vector3;
 
 public class MachineHandler {
 
-    /*
-     * TO DO: instead of mouse click, let cat mc go near machine tas tsaka lalabas options
-     * If no time: delivering to customer nalang trabaho ng cat mc ig idk
-     * ok ok ok pi pi pi pi
-     * */
-    public static void handleMachineClick(TiledMap tiledMap, float unitScale, Vector3 screenCoords) {
-        Vector3 worldCoords = new Vector3(screenCoords.x, screenCoords.y, 0);
-
-        hideAllOptions(tiledMap);
-        int tileX = (int) (worldCoords.x / (16 * unitScale));
-        int tileY = (int) (worldCoords.y / (16 * unitScale));
-
-        checkMachineClick(
-                tiledMap,
-                tileX,
-                tileY,
-                "Coffee Makers",
-                "coffee_maker",
-                "Coffee Choices",
-                "Coffee Choices Box",
-                "Coffee Choices Hover Box"
-        );
-
-        checkMachineClick(
-                tiledMap,
-                tileX,
-                tileY,
-                "Machines and Furniture",
-                "oven",
-                "Cooked Choices",
-                "Cooked Choices Box",
-                "Cooked Choices Hover Box"
-        );
-
-        checkMachineClick(
-                tiledMap,
-                tileX,
-                tileY,
-                "Machines and Furniture",
-                "pastry",
-                "Pastry Choices",
-                "Pastry Choices Box",
-                "Pastry Choices Hover Box"
-        );
-    }
-
-    private static void checkMachineClick(
-            TiledMap map,
-            int tileX,
-            int tileY,
-            String layerName,
-            String machineType,
-            String optionsLayerName,
-            String optionsBoxLayerName,
-            String hoverBoxLayerName
-    ) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
-        if (layer == null) return;
-
-        TiledMapTileLayer.Cell cell = layer.getCell(tileX, tileY);
-        if (cell == null || cell.getTile() == null) return;
-
-        String machineProp = cell.getTile().getProperties().get("machine", String.class);
-        if (machineType.equals(machineProp)) {
-            showOptions(map, optionsLayerName, optionsBoxLayerName, hoverBoxLayerName);
-        }
-    }
-
     public static void showOptions(TiledMap map, String optionsLayerName, String optionsBoxLayerName, String hoverBoxLayerName) {
+        hideAllOptions(map);
+
         MapLayer optionsLayer = map.getLayers().get(optionsLayerName);
         MapLayer optionsBoxLayer = map.getLayers().get(optionsBoxLayerName);
         MapLayer hoverBoxLayer = map.getLayers().get(hoverBoxLayerName);
@@ -168,42 +102,6 @@ public class MachineHandler {
             MapLayer layer = map.getLayers().get(layerName);
             if (layer != null) layer.setVisible(false);
         }
-    }
-
-    public static String checkMachineTypeAt(TiledMap map, int tileX, int tileY, int radius) {
-        String machineType = checkMachineProximity(map, tileX, tileY, radius, "Coffee Makers", "coffee_maker");
-        if (machineType != null) return machineType;
-
-        machineType = checkMachineProximity(map, tileX, tileY, radius, "Machines and Furniture", "oven");
-        if (machineType != null) return machineType;
-
-        machineType = checkMachineProximity(map, tileX, tileY, radius, "Machines and Furniture", "pastry");
-        if (machineType != null) return machineType;
-
-        return null;
-    }
-
-    public static String checkMachineProximity(TiledMap map, int centerTileX, int centerTileY, int radius,
-                                               String layerName, String machineType) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
-        if (layer == null) return null;
-
-        for (int xOffset = -radius; xOffset <= radius; xOffset++) {
-            for (int yOffset = -radius; yOffset <= radius; yOffset++) {
-                int checkX = centerTileX + xOffset;
-                int checkY = centerTileY + yOffset;
-
-                TiledMapTileLayer.Cell cell = layer.getCell(checkX, checkY);
-                if (cell == null || cell.getTile() == null) continue;
-
-                String machineProp = cell.getTile().getProperties().get("machine", String.class);
-                if (machineType.equals(machineProp)) {
-                    return machineType;
-                }
-            }
-        }
-
-        return null;
     }
 
     public static String checkMachineTypeAtExact(TiledMap map, int tileX, int tileY) {
