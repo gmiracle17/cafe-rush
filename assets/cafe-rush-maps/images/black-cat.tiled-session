@@ -1,0 +1,77 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "All.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx": {
+            "scale": 4,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 129.125,
+                "y": 129.875
+            }
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx#neko-cafe-furnitures": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/food-and-beverages.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/neko-cafe-furnitures.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/neko-cafe-tilemap.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/option-boxes.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/trashbin.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/assets/cafe-rush-maps/cat-black-side.tsx": {
+            "scaleInDock": 1
+        },
+        "cat-black-front.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        }
+    },
+    "last.imagePath": "C:/Users/Lenovo/Downloads/Chat BalloonsBubbles - Pixel Art/Chat BalloonsBubbles - Pixel Art",
+    "map.height": 10,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 10,
+    "openFiles": [
+        "cat-black-front.tsx",
+        "All.tsx",
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx"
+    ],
+    "project": "black-cat.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx",
+        "All.tsx",
+        "cat-black-front.tsx",
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 4,
+        "width": 4
+    }
+}

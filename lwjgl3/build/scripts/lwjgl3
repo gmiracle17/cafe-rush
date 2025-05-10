@@ -212,7 +212,7 @@ DEFAULT_JVM_OPTS=""
 
 set -- \
         -classpath "$CLASSPATH" \
-        com.caferush.game.lwjgl3.Lwjgl3Launcher \
+        com.caferush.game.lwjgl3.DesktopLauncher \
         "$@"
 
 # Stop when "xargs" is not available.
