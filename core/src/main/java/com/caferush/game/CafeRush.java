@@ -10,8 +10,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
@@ -19,6 +21,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 
 
@@ -35,7 +38,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private boolean beingDragged = false;
     private Vector2 offset = new Vector2();
     private OrderHandling orderHandling;
-    private Array<RectangleMapObject> seatList = new Array<>();
+    private ShapeRenderer sr;
 
     public static class SeatZone {
         public Rectangle bounds;
@@ -96,14 +99,23 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(positioninSheet, spritePosition.x, spritePosition.y, 16 * unitScale, 16 * unitScale);
-    
-        for (RectangleMapObject seat : seatList) {  
-        Rectangle seatRectangle = seat.getRectangle();  
-}  
+        
+        MapLayer seatLayer = tiledMap.getLayers().get("Seats");
+            if (seatLayer != null) {
+                for (MapObject obj : seatLayer.getObjects()) {
+                    if (obj instanceof TextureMapObject) {
+                        TextureMapObject seatObj = (TextureMapObject) obj;
+                        batch.draw(seatObj.getTextureRegion(), 
+                                seatObj.getX() * unitScale, 
+                                seatObj.getY() * unitScale,
+                                seatObj.getTextureRegion().getRegionWidth() * unitScale,
+                                seatObj.getTextureRegion().getRegionHeight() * unitScale);
+                    }
+                }
+            }
+            batch.draw(positioninSheet, spritePosition.x, spritePosition.y, 16 * unitScale, 16 * unitScale);
         batch.end();
 }
-
 
     @Override
 public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -113,12 +125,34 @@ public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         camera.unproject(clickedPosition);
 
         // Try to seat customer and get seat position if successful
-        Vector2 seatPosition = orderHandling.trySeatCustomer(new Vector2(clickedPosition.x, clickedPosition.y));
-        if (seatPosition != null) {
-            spritePosition.set(seatPosition.x, seatPosition.y - 10); // Snap to seat
-        } else {
-            spritePosition.set(800, 210); // Return to start
+        MapLayer seatLayer = tiledMap.getLayers().get("Seats");
+        if (seatLayer != null) {
+            for (MapObject obj : seatLayer.getObjects()) {
+                // Check if seat
+                if (obj instanceof TextureMapObject) {
+                    TextureMapObject seat = (TextureMapObject) obj;
+                    
+                    // Calculate seat bounds
+                    Rectangle seatBounds = new Rectangle(
+                        seat.getX() * unitScale,
+                        seat.getY() * unitScale,
+                        seat.getTextureRegion().getRegionWidth() * unitScale,
+                        seat.getTextureRegion().getRegionHeight() * unitScale
+                    );
+
+                    // Check if nadrop dun sa bounds nung seat
+                    if (seatBounds.contains(clickedPosition.x, clickedPosition.y)) {
+                        spritePosition.set(
+                            seat.getX() * unitScale + (seatBounds.width / 2)-30,
+                            seat.getY() * unitScale + (seatBounds.height / 2)
+                        );
+                        return true;
+                    }
+                }
+            }
         }
+        // if no seat then return to spawn point
+        spritePosition.set(800, 210);
         return true;
     }
     return false;

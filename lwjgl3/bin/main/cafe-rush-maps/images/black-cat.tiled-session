@@ -8,9 +8,6 @@
         "."
     ],
     "fileStates": {
-        "": {
-            "scaleInDock": 1
-        },
         "All.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -21,7 +18,7 @@
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx": {
             "scale": 5.5,
-            "selectedLayer": 15,
+            "selectedLayer": 16,
             "viewCenter": {
                 "x": 103.9090909090909,
                 "y": 152.27272727272725
