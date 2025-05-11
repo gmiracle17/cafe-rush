@@ -12,6 +12,8 @@ cafe-rush-maps/images/cat-black-front.tsx
 cafe-rush-maps/images/neko-cafe-food.png
 cafe-rush-maps/images/neko-cafe-furnitures.png
 cafe-rush-maps/images/neko-cafe-tilemap.png
+cafe-rush-maps/images/speech_bubble.png
+cafe-rush-maps/menu-items-caferush.tsx
 cafe-rush-maps/neko-cafe-furnitures.tsx
 cafe-rush-maps/neko-cafe-tilemap.tsx
 cafe-rush-maps/option-boxes.tsx

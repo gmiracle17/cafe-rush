@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="51" nextobjectid="18">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="70" nextobjectid="42">
  <tileset firstgid="1" source="neko-cafe-tilemap.tsx"/>
  <tileset firstgid="61" name="neko-cafe-furnitures" tilewidth="16" tileheight="16" tilecount="120" columns="12">
   <image source="images/neko-cafe-furnitures.png" width="192" height="160"/>
@@ -112,29 +112,6 @@
 0,0,0,112,113,0,0,0,112,113,0,0,0,0,126,0,
 0,0,0,124,125,0,0,0,124,125,0,0,0,0,126,0,
 0,0,0,0,0,0,0,0,0,0,0,0,115,116,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-</data>
- </layer>
- <layer id="46" name="Seats" width="16" height="16">
-  <properties>
-   <property name="isSeat" type="bool" value="true"/>
-  </properties>
-  <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,114,0,0,114,0,114,0,0,114,0,0,0,0,0,
-0,0,114,0,0,114,0,114,0,0,114,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -400,7 +377,49 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="50" name="Speech bubble" width="16" height="16">
+ <objectgroup id="60" name="Seats" visible="0">
+  <object id="27" gid="114" x="31.6364" y="175.636" width="16" height="16">
+   <properties>
+    <property name="Seat" value="1"/>
+   </properties>
+  </object>
+  <object id="35" gid="114" x="31.8182" y="191.636" width="16" height="16">
+   <properties>
+    <property name="Seat" value="2"/>
+   </properties>
+  </object>
+  <object id="36" gid="114" x="80" y="175.455" width="16" height="16">
+   <properties>
+    <property name="Seat" value="4"/>
+   </properties>
+  </object>
+  <object id="37" gid="114" x="79.4545" y="191.455" width="16" height="16">
+   <properties>
+    <property name="Seat" value="3"/>
+   </properties>
+  </object>
+  <object id="38" gid="114" x="112.364" y="191.636" width="16" height="16">
+   <properties>
+    <property name="Seat" value="6"/>
+   </properties>
+  </object>
+  <object id="39" gid="114" x="112.182" y="175.818" width="16" height="16">
+   <properties>
+    <property name="Seat" value="5"/>
+   </properties>
+  </object>
+  <object id="40" gid="114" x="159.636" y="175.818" width="16" height="16">
+   <properties>
+    <property name="Seat" value="8"/>
+   </properties>
+  </object>
+  <object id="41" gid="114" x="159.818" y="191.636" width="16" height="16">
+   <properties>
+    <property name="Seat" value="7"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="69" name="Chair" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -412,12 +431,36 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,114,0,0,114,0,114,0,0,114,0,0,0,0,0,
+0,0,114,0,0,114,0,114,0,0,114,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="51" name="Order1" visible="0">
+  <object id="18" gid="2909" x="32.3636" y="154.727" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="52" name="Order2" visible="0">
+  <object id="19" gid="2909" x="31.8182" y="174.364" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="53" name="Order3" visible="0">
+  <object id="20" gid="2909" x="80.3636" y="154" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="54" name="Order4" visible="0">
+  <object id="21" gid="2909" x="80.3636" y="174.182" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="55" name="Order5" visible="0">
+  <object id="22" gid="2909" x="112" y="174.182" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="56" name="Order6" visible="0">
+  <object id="23" gid="2909" x="112.182" y="154.182" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="57" name="Order7" visible="0">
+  <object id="24" gid="2909" x="160.364" y="154.364" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="58" name="Order8" visible="0">
+  <object id="26" gid="2909" x="160.364" y="174.182" width="16" height="16"/>
+ </objectgroup>
 </map>

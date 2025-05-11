@@ -1,12 +1,18 @@
 package com.caferush.game;
 
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+
+
 public class OrderHandling {
+
     public static class SeatZone {
         public Rectangle bounds;  
         public Vector2 position; 
@@ -20,42 +26,47 @@ public class OrderHandling {
     }
 
     private Array<SeatZone> seatZones = new Array<>();
+    private final float unitScale = 4f;
 
-    public OrderHandling(TiledMap tiledMap, float unitScale) {
-        TiledMapTileLayer seatLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Seats");
+   public OrderHandling(TiledMap tiledMap, float unitScale) {
+    MapLayer seatLayer = tiledMap.getLayers().get("Seats"); 
+    if (seatLayer != null) {
+        MapObjects seats = seatLayer.getObjects();
+        Array<RectangleMapObject> seatList = seats.getByType(RectangleMapObject.class);
         
-        if (seatLayer != null) {
-            int tileWidth = (int) (seatLayer.getTileWidth() * unitScale);
-            int tileHeight = (int) (seatLayer.getTileHeight() * unitScale);
-
-            // Find all tiles marked as seats
-            for (int y = 0; y < seatLayer.getHeight(); y++) {
-                for (int x = 0; x < seatLayer.getWidth(); x++) {
-                    TiledMapTileLayer.Cell cell = seatLayer.getCell(x, y);
-                    
-                    if (cell != null && cell.getTile() != null) {
-                        Boolean isSeat = cell.getTile().getProperties().get("isChair", Boolean.class);
-                        if (isSeat != null && isSeat) {
-                            Rectangle bounds = new Rectangle(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-                            seatZones.add(new SeatZone(bounds, new Vector2(x * tileWidth, y * tileHeight)));
-                        }
-                    }
-                }
-            }
+        for (RectangleMapObject seatObj : seatList) {
+            Rectangle bounds = seatObj.getRectangle();
+            // Adjust for unitScale if needed
+            bounds.x *= unitScale;
+            bounds.y *= unitScale;
+            bounds.width *= unitScale;
+            bounds.height *= unitScale;
+            
+            seatZones.add(new SeatZone(
+                bounds,
+                new Vector2(bounds.x, bounds.y)
+            ));
         }
     }
-
-    // Try to place a customer in a seat
-        public Vector2 trySeatCustomer(Vector2 dropPosition) {
-        for (SeatZone seat : seatZones) {
-            if (seat.bounds.contains(dropPosition) && !seat.occupied) {
-                seat.occupied = true;
-                return seat.position;
-            }
+}
+    // Place customer in seat
+    public Vector2 trySeatCustomer(Vector2 dropPosition) {
+    for (SeatZone seat : seatZones) {
+        // Convert seat bounds to world coordinates
+        Rectangle worldBounds = new Rectangle(
+            seat.bounds.x * unitScale,
+            seat.bounds.y * unitScale,
+            seat.bounds.width * unitScale,
+            seat.bounds.height * unitScale
+        );
+        
+        if (worldBounds.contains(dropPosition) && !seat.occupied) {
+            seat.occupied = true;
+            return new Vector2(worldBounds.x, worldBounds.y);
         }
-        return null; // No available seat
     }
-
+    return null;
+}
     public Array<SeatZone> getSeatZones() {
         return seatZones;
     }
