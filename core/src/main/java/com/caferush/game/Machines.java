@@ -1,5 +1,8 @@
 package com.caferush.game;
 
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+
 public class Machines {
 
     public static abstract class Machine extends Thread {
@@ -19,6 +22,8 @@ public class Machines {
 
         protected int displayX;
         protected int displayY;
+
+        protected TiledMap map;
 
         public Machine(String name, String machineLayer, String machineType, String optionsLayer,
                        String optionsBoxLayer, String optionsHoverBoxLayer, String produceDisplayLayer,
@@ -41,21 +46,51 @@ public class Machines {
          * the idea is in first processTime/3 make produceDisplayBoxLayer + Red visible
          * in second processTime/3 + Yellow is visible
          * then lastly, if time = processTime make + Green visible*/
-        public boolean startProcess(String item) {
+        public boolean startProcess(TiledMap map, Machines.Machine machine, TiledMapTileLayer.Cell optionCell) {
             if (isBusy) {
                 System.out.println(name + " is currently busy."); // maybe display red machine layer for 3 seconds
                 return false;
             } else {
-                this.choice = item;
+                this.choice = optionCell.getTile().getProperties().get("order", String.class);
                 this.isBusy = true;
-                this.start();
+                this.map = map;
+
+                TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayLayer);
+                MachineHandler.clearUsedCells(displayLayer);
+                displayLayer.setCell(machine.displayX, machine.displayY, optionCell);
+                displayLayer.setVisible(true);
+
+                new Thread(() -> runProcess()).start();
                 return true;
             }
         }
 
-        @Override
-        public void run() {
+        private void runProcess() {
+            try {
+                MachineHandler.setStatusColor(map, this, " Red");
+                Thread.sleep(processTime / 2);
 
+                MachineHandler.setStatusColor(map, this, " Yellow");
+                Thread.sleep(processTime / 2);
+
+                MachineHandler.setStatusColor(map, this, " Green");
+                Thread.sleep(5000); // simulate user collecting
+
+                // Clear visuals
+                TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
+                displayLayer.setVisible(false);
+
+                String[] colors = {" Green", " Yellow", " Red"};
+                for (String color : colors) {
+                    TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color);
+                    boxLayer.setVisible(false);
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                this.isBusy = false;
+            }
         }
     }
 
@@ -94,7 +129,7 @@ public class Machines {
                     "Pastry Choices Hover Box",
                     "Pastry Produce Display",
                     "Pastry Produce Display Box",
-                    5000,
+                    3000,
                     displayX,
                     displayY);
         }

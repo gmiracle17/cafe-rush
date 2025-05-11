@@ -290,7 +290,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         if (nearMachineType != null) {
             for (Machines.Machine machine : machinesList) {
-                if (machine.machineType.equalsIgnoreCase(nearMachineType)) {
+                if (machine.machineType.equalsIgnoreCase(nearMachineType) && !machine.isBusy) {
                     MachineHandler.showOptions(tiledMap, machine);
                 }
             }
@@ -351,22 +351,26 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             if (optionsLayer != null && optionsLayer.isVisible()) {
                 TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
                 if (cell != null && cell.getTile() != null) {
-                    System.out.println("Option selected from layer: " + machine.optionsLayer + " at tile: " + tileX + ", " + tileY);
+                    System.out.println("Option selected from" + machine.name + "at tile: " + tileX + ", " + tileY);
 
                     // Retrieve the 'order' property from the clicked tile
                     String order = cell.getTile().getProperties().get("order", String.class);
-
                     if (order != null) {
-                        System.out.println("Order selected: " + order);
+                        // This will set machine.choice internally
+                        boolean started = machine.startProcess(tiledMap, machine, cell);
 
-                        // Show the chosen option based on the machine's produceDisplayLayer
-                        // CoffeeMaker1
-                        MachineHandler.showChosenOption(tiledMap, machine, cell);
+                        if (started) {
+                            // Now you can safely access machine.choice
+                            System.out.println("Order selected: " + machine.choice);
+                        } else {
+                            System.out.println("Machine is busy. Current choice: " + machine.choice);
+                        }
 
-                        // Hide all options after the selection
                         MachineHandler.hideAllOptions(tiledMap, machinesList);
                         break;
-                    } else {
+                    }
+
+                    else {
                         System.out.println("No 'order' property found on the clicked tile.");
                     }
                 }

@@ -2,6 +2,7 @@ package com.caferush.game;
 
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
 public class MachineHandler {
@@ -15,18 +16,14 @@ public class MachineHandler {
         optionsBoxLayer.setVisible(true);
     }
 
-    /* Displays chosen option above machine */
-    public static void showChosenOption(TiledMap map, Machines.Machine machine, TiledMapTileLayer.Cell optionCell) {
-        TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayLayer);
-        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer);
-
-        clearUsedCells(displayLayer);
-        if (optionCell != null) displayLayer.setCell(machine.displayX, machine.displayY, optionCell);
-        displayLayer.setVisible(true);
+    // Inside MachineHandler
+    public static void setStatusColor(TiledMap map, Machines.Machine machine, String color) {
+        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer + color);
 
         TiledMapTileLayer.Cell originalBoxCell = boxLayer.getCell(machine.displayX, machine.displayY);
         clearUsedCells(boxLayer);
 
+        // Load correct tile by color name (red, yellow, green)
         if (originalBoxCell != null && originalBoxCell.getTile() != null) {
             TiledMapTileLayer.Cell newBoxCell = new TiledMapTileLayer.Cell();
             newBoxCell.setTile(originalBoxCell.getTile());
@@ -36,6 +33,7 @@ public class MachineHandler {
             boxLayer.setVisible(false);
         }
     }
+
 
     /* Shows hovered tile among options */
     public static void handleOptionsHover(TiledMap map, int tileX, int tileY, Machines.Machine[] machines) {
@@ -87,7 +85,7 @@ public class MachineHandler {
     }
 
     /* Removes cell */
-    private static void clearUsedCells(TiledMapTileLayer layer) {
+    static void clearUsedCells(TiledMapTileLayer layer) {
         int width = layer.getWidth();
         int height = layer.getHeight();
         for (int x = 0; x < width; x++) {
