@@ -3,39 +3,49 @@ package com.caferush.game;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.math.Vector3;
 
 public class MachineHandler {
 
-    public static void showOptions(TiledMap map, String optionsLayerName, String optionsBoxLayerName, String hoverBoxLayerName) {
-        hideAllOptions(map);
+    /* Shows options for machine clicked */
+    public static void showOptions(TiledMap map, Machines.Machine machine) {
+        MapLayer optionsLayer = map.getLayers().get(machine.optionsLayer);
+        MapLayer optionsBoxLayer = map.getLayers().get(machine.optionsBoxLayer);
 
-        MapLayer optionsLayer = map.getLayers().get(optionsLayerName);
-        MapLayer optionsBoxLayer = map.getLayers().get(optionsBoxLayerName);
-        MapLayer hoverBoxLayer = map.getLayers().get(hoverBoxLayerName);
-
-        if (optionsLayer != null) optionsLayer.setVisible(true);
-        if (optionsBoxLayer != null) optionsBoxLayer.setVisible(true);
-        if (hoverBoxLayer != null) hoverBoxLayer.setVisible(false); // hidden initially, only shown on hover
+        optionsLayer.setVisible(true);
+        optionsBoxLayer.setVisible(true);
     }
 
-    public static void handleOptionsHover(TiledMap map, int tileX, int tileY) {
-        String[][] layerGroups = {
-                {"Coffee Choices", "Coffee Choices Box", "Coffee Choices Hover Box"},
-                {"Cooked Choices", "Cooked Choices Box", "Cooked Choices Hover Box"},
-                {"Pastry Choices", "Pastry Choices Box", "Pastry Choices Hover Box"}
-        };
+    /* Displays chosen option above machine */
+    public static void showChosenOption(TiledMap map, Machines.Machine machine, TiledMapTileLayer.Cell optionCell) {
+        TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayLayer);
+        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer);
 
+        clearUsedCells(displayLayer);
+        if (optionCell != null) displayLayer.setCell(machine.displayX, machine.displayY, optionCell);
+        displayLayer.setVisible(true);
+
+        TiledMapTileLayer.Cell originalBoxCell = boxLayer.getCell(machine.displayX, machine.displayY);
+        clearUsedCells(boxLayer);
+
+        if (originalBoxCell != null && originalBoxCell.getTile() != null) {
+            TiledMapTileLayer.Cell newBoxCell = new TiledMapTileLayer.Cell();
+            newBoxCell.setTile(originalBoxCell.getTile());
+            boxLayer.setCell(machine.displayX, machine.displayY, newBoxCell);
+            boxLayer.setVisible(true);
+        } else {
+            boxLayer.setVisible(false);
+        }
+    }
+
+    /* Shows hovered tile among options */
+    public static void handleOptionsHover(TiledMap map, int tileX, int tileY, Machines.Machine[] machines) {
         boolean hoverLayerShown = false;
 
-        for (String[] group : layerGroups) {
-            String optionsLayerName = group[0];
-            String optionsBoxLayerName = group[1];
-            String hoverBoxLayerName = group[2];
+        for (Machines.Machine machine : machines) {
 
-            TiledMapTileLayer optionsLayer = (TiledMapTileLayer) map.getLayers().get(optionsLayerName);
-            TiledMapTileLayer optionsBoxLayer = (TiledMapTileLayer) map.getLayers().get(optionsBoxLayerName);
-            TiledMapTileLayer hoverBoxLayer = (TiledMapTileLayer) map.getLayers().get(hoverBoxLayerName);
+            TiledMapTileLayer optionsLayer = (TiledMapTileLayer) map.getLayers().get(machine.optionsLayer);
+            TiledMapTileLayer optionsBoxLayer = (TiledMapTileLayer) map.getLayers().get(machine.optionsBoxLayer);
+            TiledMapTileLayer hoverBoxLayer = (TiledMapTileLayer) map.getLayers().get(machine.optionsHoverBoxLayer);
 
             if (hoverBoxLayer == null) continue;
 
@@ -45,11 +55,8 @@ public class MachineHandler {
             TiledMapTileLayer.Cell optionsCell = null;
             TiledMapTileLayer.Cell optionsBoxCell = null;
 
-            if (optionsLayer != null && optionsLayer.isVisible())
-                optionsCell = optionsLayer.getCell(tileX, tileY);
-
-            if (optionsBoxLayer != null && optionsBoxLayer.isVisible())
-                optionsBoxCell = optionsBoxLayer.getCell(tileX, tileY);
+            if (optionsLayer != null && optionsLayer.isVisible()) optionsCell = optionsLayer.getCell(tileX, tileY);
+            if (optionsBoxLayer != null && optionsBoxLayer.isVisible()) optionsBoxCell = optionsBoxLayer.getCell(tileX, tileY);
 
             TiledMapTileLayer.Cell hoverTileCell = null;
 
@@ -69,8 +76,8 @@ public class MachineHandler {
         }
 
         if (!hoverLayerShown) {
-            for (String[] group : layerGroups) {
-                TiledMapTileLayer hoverBoxLayer = (TiledMapTileLayer) map.getLayers().get(group[2]);
+            for (Machines.Machine machine : machines) {
+                TiledMapTileLayer hoverBoxLayer = (TiledMapTileLayer) map.getLayers().get(machine.optionsHoverBoxLayer);
                 if (hoverBoxLayer != null) {
                     clearUsedCells(hoverBoxLayer);
                     hoverBoxLayer.setVisible(false);
@@ -79,6 +86,7 @@ public class MachineHandler {
         }
     }
 
+    /* Removes cell */
     private static void clearUsedCells(TiledMapTileLayer layer) {
         int width = layer.getWidth();
         int height = layer.getHeight();
@@ -91,19 +99,20 @@ public class MachineHandler {
         }
     }
 
-    public static void hideAllOptions(TiledMap map) {
-        String[] layersToHide = {
-                "Coffee Choices", "Coffee Choices Box", "Coffee Choices Hover Box",
-                "Cooked Choices", "Cooked Choices Box", "Cooked Choices Hover Box",
-                "Pastry Choices", "Pastry Choices Box", "Pastry Choices Hover Box"
-        };
+    /* Hides options after transferring to another machine or walking away far from machine */
+    public static void hideAllOptions(TiledMap map, Machines.Machine[] machines) {
+        for (Machines.Machine machine : machines) {
+            MapLayer optionsLayer = map.getLayers().get(machine.optionsLayer);
+            MapLayer optionsBoxLayer = map.getLayers().get(machine.optionsBoxLayer);
+            MapLayer hoverBoxLayer = map.getLayers().get(machine.optionsHoverBoxLayer);
 
-        for (String layerName : layersToHide) {
-            MapLayer layer = map.getLayers().get(layerName);
-            if (layer != null) layer.setVisible(false);
+            optionsLayer.setVisible(false);
+            optionsBoxLayer.setVisible(false);
+            hoverBoxLayer.setVisible(false);
         }
     }
 
+    /* honestly, don't need this anymore */
     public static String checkMachineTypeAtExact(TiledMap map, int tileX, int tileY) {
         String machineType = checkExactMachineAt(map, tileX, tileY, "Coffee Makers", "coffee_maker");
         if (machineType != null) return machineType;
@@ -117,6 +126,11 @@ public class MachineHandler {
         return null;
     }
 
+    /* Request: Please make this interact with specified tiles in Machine Threads
+     * Coffee_maker(3): One tile only
+     * Oven(2): 4 different tiles
+     * Pastry(1): 4 different tiles
+     * */
     private static String checkExactMachineAt(TiledMap map, int tileX, int tileY,
                                               String layerName, String machineType) {
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);

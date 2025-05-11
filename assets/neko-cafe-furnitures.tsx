@@ -43,12 +43,24 @@
  </tile>
  <tile id="49">
   <properties>
+   <property name="depth" value="front"/>
    <property name="machine" value="pastry"/>
   </properties>
  </tile>
  <tile id="50">
   <properties>
+   <property name="depth" value="front"/>
    <property name="machine" value="pastry"/>
+  </properties>
+ </tile>
+ <tile id="51">
+  <properties>
+   <property name="depth" value="front"/>
+  </properties>
+ </tile>
+ <tile id="52">
+  <properties>
+   <property name="depth" value="front"/>
   </properties>
  </tile>
  <tile id="56">

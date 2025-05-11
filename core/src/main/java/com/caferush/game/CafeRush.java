@@ -8,10 +8,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -21,8 +19,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+
 /**
  * Main game class for Cafe Rush
+ * Request: Please make the range for clicking closer and for coffee maker, base it on specified coffee maker locations
  */
 public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
@@ -52,6 +52,18 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private boolean nearMachine = false;
     private String nearMachineType = null;
+
+    /* All Machines */
+    Machines.Machine CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 6, 10, 6, 11);
+    Machines.Machine CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 7, 10, 7, 11);
+    Machines.Machine CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 8, 10, 8, 11);
+
+    Machines.Machine Pastry1 = new Machines.PastryMaker("Pastry1", 7,9);
+
+    Machines.Machine Oven1 = new Machines.Oven("Oven1", new int[]{15, 16, 27, 28}, 12,11);
+    Machines.Machine Oven2 = new Machines.Oven("Oven2", new int[]{17, 18, 29, 30}, 14,11);
+
+    private Machines.Machine[] machinesList;
 
     @Override
     public void create() {
@@ -90,6 +102,8 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         characterPosition = new Vector2(500, 500);
         stateTime = 0f;
 
+        machinesList = new Machines.Machine[]{CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2};
+
         // for collision detection
         TextureRegion frame = walkDown.getKeyFrames()[0];
         characterWidth = frame.getRegionWidth() * CHARACTER_SCALE;
@@ -110,7 +124,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         boolean moved = handleCharacterInput(delta);
 
         if (moved) {
-            MachineHandler.hideAllOptions(tiledMap);
+            MachineHandler.hideAllOptions(tiledMap, machinesList);
         }
 
         checkNearbyMachines();
@@ -257,7 +271,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
     }
 
-
+    /* Please remove checkMachineTypeAtExact and make it just get machineType of machine*/
     private String checkForSpecificMachine(int centerX, int centerY, int radius, String machineType) {
         for (int y = centerY - radius; y <= centerY + radius; y++) {
             for (int x = centerX - radius; x <= centerX + radius; x++) {
@@ -270,15 +284,15 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return null;
     }
 
+    /* Shows options of machine if near and clicked */
     private void handleMachineInteraction() {
-        MachineHandler.hideAllOptions(tiledMap);
+        MachineHandler.hideAllOptions(tiledMap, machinesList);
+
         if (nearMachineType != null) {
-            if (nearMachineType.equals("coffee_maker")) {
-                MachineHandler.showOptions(tiledMap, "Coffee Choices", "Coffee Choices Box", "Coffee Choices Hover Box");
-            } else if (nearMachineType.equals("oven")) {
-                MachineHandler.showOptions(tiledMap, "Cooked Choices", "Cooked Choices Box", "Cooked Choices Hover Box");
-            } else if (nearMachineType.equals("pastry")) {
-                MachineHandler.showOptions(tiledMap, "Pastry Choices", "Pastry Choices Box", "Pastry Choices Hover Box");
+            for (Machines.Machine machine : machinesList) {
+                if (machine.machineType.equalsIgnoreCase(nearMachineType)) {
+                    MachineHandler.showOptions(tiledMap, machine);
+                }
             }
         }
     }
@@ -316,20 +330,83 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        // Convert screen coordinates to world coordinates
         Vector2 worldCoords = viewport.unproject(new Vector2(screenX, screenY));
-        // Calculate tile coordinates based on the world coordinates and unit scale
+
         int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
         int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
-        // Update hover effect on options layers
-        MachineHandler.handleOptionsHover(tiledMap, tileX, tileY);
+
+        MachineHandler.handleOptionsHover(tiledMap, tileX, tileY, machinesList);
+        return false;
+    }
+
+    /* Trying to fix this */
+    private void handleOptionClick(int tileX, int tileY) {
+        float tileSize = 16 * UNIT_SCALE;
+        int machineTileX = (int) (characterPosition.x / tileSize);
+        int machineTileY = (int) (characterPosition.y / tileSize);
+
+        for (Machines.Machine machine : machinesList) {
+            TiledMapTileLayer optionsLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.optionsLayer);
+
+            if (optionsLayer != null && optionsLayer.isVisible()) {
+                TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
+                if (cell != null && cell.getTile() != null) {
+                    System.out.println("Option selected from layer: " + machine.optionsLayer + " at tile: " + tileX + ", " + tileY);
+
+                    // Retrieve the 'order' property from the clicked tile
+                    String order = cell.getTile().getProperties().get("order", String.class);
+
+                    if (order != null) {
+                        System.out.println("Order selected: " + order);
+
+                        // Show the chosen option based on the machine's produceDisplayLayer
+                        // CoffeeMaker1
+                        MachineHandler.showChosenOption(tiledMap, machine, cell);
+
+                        // Hide all options after the selection
+                        MachineHandler.hideAllOptions(tiledMap, machinesList);
+                        break;
+                    } else {
+                        System.out.println("No 'order' property found on the clicked tile.");
+                    }
+                }
+            }
+        }
+    }
+
+    private Machines.Machine getMachineAt(int tileX, int tileY) {
+        for (Machines.Machine machine : machinesList) {
+            if (machine.machineLayer != null) {
+                TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.machineLayer);
+                if (layer != null) {
+                    TiledMapTileLayer.Cell cell = layer.getCell(tileX, tileY);
+                    if (cell != null && cell.getTile() != null) {
+                        String prop = cell.getTile().getProperties().get("machine", String.class);
+                        if (machine.machineType.equals(prop)) {
+                            return machine;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (button == Input.Buttons.LEFT) {
+            Vector2 worldCoords = viewport.unproject(new Vector2(screenX, screenY));
+            int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
+            int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
+            handleOptionClick(tileX, tileY);
+        }
         return false;
     }
 
 
     @Override public boolean keyUp(int keycode) { return false; }
     @Override public boolean keyTyped(char character) { return false; }
-    @Override public boolean touchDown(int screenX, int screenY, int pointer, int button) { return false; }
     @Override public boolean touchUp(int screenX, int screenY, int pointer, int button) { return false; }
     @Override public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return false; }
     @Override public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
