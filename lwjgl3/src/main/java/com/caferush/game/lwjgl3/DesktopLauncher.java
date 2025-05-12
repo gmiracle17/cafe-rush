@@ -11,6 +11,12 @@ public class DesktopLauncher {
         config.useVsync(true);
         config.setWindowedMode(1280, 900);
         config.setResizable(false);
+
+        config.setWindowIcon(
+                "libgdx128.png",
+                "libgdx64.png"
+        );
+
         new Lwjgl3Application(new CafeRush(), config);
     }
 }

@@ -1,4 +1,5 @@
-Cafe with Product Options.tmx
+Cafe Map.tmx
+Menu Background.png
 food-and-beverages.tsx
 images/Bar katto 2.0 icon sheet.png
 images/FOOD.png

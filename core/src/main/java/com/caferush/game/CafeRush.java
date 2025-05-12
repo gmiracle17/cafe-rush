@@ -1,9 +1,6 @@
 package com.caferush.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,12 +16,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.ArrayList;
+
 
 /**
  * Main game class for Cafe Rush
  * Request: Please make the range for clicking closer and for coffee maker, base it on specified coffee maker locations
  */
-public class CafeRush extends ApplicationAdapter implements InputProcessor {
+public class CafeRush extends Game implements InputProcessor {
 
 
     private static final float VIRTUAL_WIDTH = 1000;
@@ -54,25 +53,26 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private String nearMachineType = null;
 
     /* All Machines */
-    Machines.Machine CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 6, 10, 6, 11);
-    Machines.Machine CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 7, 10, 7, 11);
-    Machines.Machine CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 8, 10, 8, 11);
+    Machines.Machine CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1,6, 10, 6, 11);
+    Machines.Machine CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2,7, 10, 7, 11);
+    Machines.Machine CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3,8, 10, 8, 11);
 
     Machines.Machine Pastry1 = new Machines.PastryMaker("Pastry1", 7,9);
 
-    Machines.Machine Oven1 = new Machines.Oven("Oven1", new int[]{15, 16, 27, 28}, 12,11);
-    Machines.Machine Oven2 = new Machines.Oven("Oven2", new int[]{17, 18, 29, 30}, 14,11);
+    Machines.Machine Oven1 = new Machines.Oven("Oven1", 1, new int[]{15, 16, 27, 28}, 12,11);
+    Machines.Machine Oven2 = new Machines.Oven("Oven2", 2, new int[]{17, 18, 29, 30}, 14,11);
 
     private Machines.Machine[] machinesList;
 
     @Override
     public void create() {
+
         camera = new OrthographicCamera();
         viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
         viewport.apply();
 
         // Load and set up map
-        tiledMap = new TmxMapLoader().load("Cafe with Product Options.tmx");
+        tiledMap = new TmxMapLoader().load("Cafe Map.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, UNIT_SCALE);
 
         // Set up camera position based on map dimensions
@@ -87,9 +87,9 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         camera.update();
 
         // Load character textures
-        frontTexture = new Texture("pngs/cat-black-front.png");
-        backTexture = new Texture("pngs/cat-black-back.png");
-        sideTexture = new Texture("pngs/cat-black-side.png");
+        frontTexture = new Texture("pngs/cat-waiter-front.png");
+        backTexture = new Texture("pngs/cat-waiter-back.png");
+        sideTexture = new Texture("pngs/cat-waiter-side.png");
 
         // Create character animations
         walkDown = createAnimation(frontTexture);
@@ -99,7 +99,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Initialize character state
         currentAnimation = walkDown;
-        characterPosition = new Vector2(500, 500);
+        characterPosition = new Vector2(757, 512);
         stateTime = 0f;
 
         machinesList = new Machines.Machine[]{CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2};
@@ -138,8 +138,30 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Render map and character
         camera.update();
+        int[] foregroundIndices = {3, 13, 14, 15, 26, 31, 32, 33};
+
+        // Create an array for background layers (everything except the foreground one)
+        ArrayList<Integer> backgroundLayerIndices = new ArrayList<>();
+        for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
+            boolean isForeground = false;
+            for (int index : foregroundIndices) {
+                if (i == index) {
+                    isForeground = true;
+                    break;
+                }
+            }
+            if (!isForeground) backgroundLayerIndices.add(i);
+        }
+
+        // Convert to int[]
+        int[] backgroundArray = backgroundLayerIndices.stream().mapToInt(Integer::intValue).toArray();
+
+        // Render background layers
         tiledMapRenderer.setView(camera);
-        tiledMapRenderer.render();
+
+        for (int index : backgroundArray) {
+            tiledMapRenderer.render(new int[] {index});
+        }
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
@@ -147,6 +169,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 currentFrame.getRegionWidth() * CHARACTER_SCALE,
                 currentFrame.getRegionHeight() * CHARACTER_SCALE);
         batch.end();
+
+        for (int index : foregroundIndices) {
+            tiledMapRenderer.render(new int[] {index});
+        }
     }
 
 
@@ -222,10 +248,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         float bottom = characterPosition.y + (characterHeight - hitboxHeight) / 2;
         float top = characterPosition.y + (characterHeight + hitboxHeight) / 2;
 
-        int leftTile = (int)(left / tileSize);
-        int rightTile = (int)(right / tileSize);
-        int bottomTile = (int)(bottom / tileSize);
-        int topTile = (int)(top / tileSize);
+        int leftTile = (int)(left / tileSize - 0.11f);
+        int rightTile = (int)(right / tileSize + 0.11f);
+        int bottomTile = (int)(bottom / tileSize - 0.26f);
+        int topTile = (int)(top / tileSize - 0.26f);
 
         TiledMapTileLayer collisionLayer = (TiledMapTileLayer) tiledMap.getLayers().get("Collision");
         if (collisionLayer == null) return false;
@@ -291,7 +317,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (nearMachineType != null) {
             for (Machines.Machine machine : machinesList) {
                 if (machine.machineType.equalsIgnoreCase(nearMachineType) && !machine.isBusy) {
-                    MachineHandler.showOptions(tiledMap, machine);
+                    machine.showOptions(tiledMap);
                 }
             }
         }
@@ -339,44 +365,48 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return false;
     }
 
-    /* Trying to fix this */
     private void handleOptionClick(int tileX, int tileY) {
-        float tileSize = 16 * UNIT_SCALE;
-        int machineTileX = (int) (characterPosition.x / tileSize);
-        int machineTileY = (int) (characterPosition.y / tileSize);
+        boolean processed = false;
 
         for (Machines.Machine machine : machinesList) {
+            if (machine.isBusy) {
+                System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
+                continue;
+            }
+
             TiledMapTileLayer optionsLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.optionsLayer);
+            if (optionsLayer == null || !optionsLayer.isVisible()) continue;
 
-            if (optionsLayer != null && optionsLayer.isVisible()) {
-                TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
-                if (cell != null && cell.getTile() != null) {
-                    System.out.println("Option selected from" + machine.name + "at tile: " + tileX + ", " + tileY);
+            TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
 
-                    // Retrieve the 'order' property from the clicked tile
-                    String order = cell.getTile().getProperties().get("order", String.class);
-                    if (order != null) {
-                        // This will set machine.choice internally
-                        boolean started = machine.startProcess(tiledMap, machine, cell);
+            if (cell != null && cell.getTile() != null) {
+                String order = cell.getTile().getProperties().get("order", String.class);
 
-                        if (started) {
-                            // Now you can safely access machine.choice
-                            System.out.println("Order selected: " + machine.choice);
-                        } else {
-                            System.out.println("Machine is busy. Current choice: " + machine.choice);
-                        }
+                if (order != null) {
+                    boolean started = machine.startProcess(tiledMap, cell);
 
-                        MachineHandler.hideAllOptions(tiledMap, machinesList);
+                    if (started) {
+                        System.out.println("Started " + machine.name + " (ID: " + machine.machineId + ") with order: " + order);
+                        machine.hideOptions();
+                        processed = true;
                         break;
+                    } else {
+                        System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy.");
                     }
-
-                    else {
-                        System.out.println("No 'order' property found on the clicked tile.");
-                    }
+                } else {
+                    System.out.println("No 'order' property found on the clicked tile.");
                 }
             }
         }
+
+        // Optional: If no machine was available to process the order, you can handle it here
+        if (!processed) {
+            System.out.println("No available machine to process the order.");
+        }
     }
+
+
+
 
     private Machines.Machine getMachineAt(int tileX, int tileY) {
         for (Machines.Machine machine : machinesList) {

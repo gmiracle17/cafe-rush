@@ -7,8 +7,12 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
 public class MachineHandler {
 
+    private static Machines.Machine activeMachine = null;
+
     /* Shows options for machine clicked */
     public static void showOptions(TiledMap map, Machines.Machine machine) {
+        activeMachine = machine;
+
         MapLayer optionsLayer = map.getLayers().get(machine.optionsLayer);
         MapLayer optionsBoxLayer = map.getLayers().get(machine.optionsBoxLayer);
 
@@ -16,14 +20,16 @@ public class MachineHandler {
         optionsBoxLayer.setVisible(true);
     }
 
-    // Inside MachineHandler
+    public static Machines.Machine getActiveMachine() {
+        return activeMachine;
+    }
+    /* Machine Timer Visualization */
     public static void setStatusColor(TiledMap map, Machines.Machine machine, String color) {
-        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer + color);
+        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer + color + machine.machineId);
 
         TiledMapTileLayer.Cell originalBoxCell = boxLayer.getCell(machine.displayX, machine.displayY);
         clearUsedCells(boxLayer);
 
-        // Load correct tile by color name (red, yellow, green)
         if (originalBoxCell != null && originalBoxCell.getTile() != null) {
             TiledMapTileLayer.Cell newBoxCell = new TiledMapTileLayer.Cell();
             newBoxCell.setTile(originalBoxCell.getTile());
