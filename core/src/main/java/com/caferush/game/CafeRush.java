@@ -138,7 +138,7 @@ public class CafeRush extends Game implements InputProcessor {
 
         // Render map and character
         camera.update();
-        int[] foregroundIndices = {3, 13, 14, 15, 26, 31, 32, 33};
+        int[] foregroundIndices = {3, 13, 14, 15, 27, 31, 32, 33};
 
         // Create an array for background layers (everything except the foreground one)
         ArrayList<Integer> backgroundLayerIndices = new ArrayList<>();
