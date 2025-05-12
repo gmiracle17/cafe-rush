@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="70" nextobjectid="42">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="70" nextobjectid="51">
  <tileset firstgid="1" source="neko-cafe-tilemap.tsx"/>
  <tileset firstgid="61" name="neko-cafe-furnitures" tilewidth="16" tileheight="16" tilecount="120" columns="12">
   <image source="images/neko-cafe-furnitures.png" width="192" height="160"/>
@@ -377,70 +377,62 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="60" name="Seats">
-  <object id="27" gid="114" x="31.6364" y="175.636" width="16" height="16">
+ <objectgroup id="60" name="Seats" offsetx="1.27273" offsety="0.363636">
+  <object id="27" gid="114" x="31.4546" y="175.454" width="16" height="16">
    <properties>
-    <property name="Seat" value="1"/>
+    <property name="Seat" type="int" value="1"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
-  <object id="35" gid="114" x="31.8182" y="191.636" width="16" height="16">
+  <object id="35" gid="114" x="31.0909" y="192" width="16" height="16">
    <properties>
-    <property name="Seat" value="2"/>
+    <property name="Seat 2" type="int" value="2"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
-  <object id="36" gid="114" x="80" y="175.455" width="16" height="16">
+  <object id="36" gid="114" x="79.2727" y="175.455" width="16" height="16">
    <properties>
-    <property name="Seat" value="4"/>
+    <property name="Seat" type="int" value="4"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
   <object id="37" gid="114" x="79.4545" y="191.455" width="16" height="16">
    <properties>
-    <property name="Seat" value="3"/>
+    <property name="Seat" type="int" value="3"/>
+    <property name="orderpositionx" type="float" value="2"/>
+    <property name="orderpositiony" type="float" value="8"/>
    </properties>
   </object>
-  <object id="38" gid="114" x="112.364" y="191.636" width="16" height="16">
+  <object id="38" gid="114" x="111.455" y="191.636" width="16" height="16">
    <properties>
-    <property name="Seat" value="6"/>
+    <property name="Seat" type="int" value="5"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
-  <object id="39" gid="114" x="112.182" y="175.818" width="16" height="16">
+  <object id="39" gid="114" x="112" y="175.818" width="16" height="16">
    <properties>
-    <property name="Seat" value="5"/>
+    <property name="Seat" type="int" value="6"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
   <object id="40" gid="114" x="159.636" y="175.818" width="16" height="16">
    <properties>
-    <property name="Seat" value="8"/>
+    <property name="Seat" type="int" value="7"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
   <object id="41" gid="114" x="159.818" y="191.636" width="16" height="16">
    <properties>
-    <property name="Seat" value="7"/>
+    <property name="Seat" type="int" value="8"/>
+    <property name="orderpositionx" type="float" value="-40"/>
+    <property name="orderpositiony" type="float" value="-40"/>
    </properties>
   </object>
- </objectgroup>
- <objectgroup id="51" name="Order1" visible="0">
-  <object id="18" gid="2909" x="32.3636" y="154.727" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="52" name="Order2" visible="0">
-  <object id="19" gid="2909" x="31.8182" y="174.364" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="53" name="Order3" visible="0">
-  <object id="20" gid="2909" x="80.3636" y="154" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="54" name="Order4" visible="0">
-  <object id="21" gid="2909" x="80.3636" y="174.182" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="55" name="Order5" visible="0">
-  <object id="22" gid="2909" x="112" y="174.182" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="56" name="Order6" visible="0">
-  <object id="23" gid="2909" x="112.182" y="154.182" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="57" name="Order7" visible="0">
-  <object id="24" gid="2909" x="160.364" y="154.364" width="16" height="16"/>
- </objectgroup>
- <objectgroup id="58" name="Order8" visible="0">
-  <object id="26" gid="2909" x="160.364" y="174.182" width="16" height="16"/>
  </objectgroup>
 </map>

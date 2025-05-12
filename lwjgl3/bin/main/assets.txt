@@ -1,7 +1,5 @@
-cafe-rush-maps/All.tsx
 cafe-rush-maps/Cafe with Product Options.tmx
 cafe-rush-maps/food-and-beverages.tsx
-cafe-rush-maps/images/All.tsx
 cafe-rush-maps/images/Bar katto 2.0 icon sheet.png
 cafe-rush-maps/images/FOOD.png
 cafe-rush-maps/images/Interiors_free_16x16.png
@@ -12,7 +10,7 @@ cafe-rush-maps/images/cat-black-front.tsx
 cafe-rush-maps/images/neko-cafe-food.png
 cafe-rush-maps/images/neko-cafe-furnitures.png
 cafe-rush-maps/images/neko-cafe-tilemap.png
-cafe-rush-maps/images/speech_bubble.png
+cafe-rush-maps/images/speech-bubble.png
 cafe-rush-maps/menu-items-caferush.tsx
 cafe-rush-maps/neko-cafe-furnitures.tsx
 cafe-rush-maps/neko-cafe-tilemap.tsx

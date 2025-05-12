@@ -8,20 +8,24 @@
         "."
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "All.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 8,
             "scaleInEditor": 3
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx": {
             "scale": 5.5,
-            "selectedLayer": 16,
+            "selectedLayer": 15,
             "viewCenter": {
-                "x": 103.9090909090909,
-                "y": 152.27272727272725
+                "x": 62.81818181818181,
+                "y": 136.0909090909091
             }
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx#neko-cafe-furnitures": {
@@ -51,6 +55,7 @@
             "scaleInDock": 1
         },
         "cat-black-front.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 8,
             "scaleInEditor": 3
         }
@@ -63,16 +68,15 @@
     "openFiles": [
         "cat-black-front.tsx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
-        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/menu-items-caferush.tsx"
     ],
     "project": "black-cat.tiled-project",
-    "property.type": "string",
+    "property.type": "float",
     "recentFiles": [
         "cat-black-front.tsx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/menu-items-caferush.tsx",
-        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
+        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx",
         "All.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
