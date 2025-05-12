@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="98" nextobjectid="12">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="99" nextobjectid="12">
  <tileset firstgid="1" source="neko-cafe-tilemap.tsx"/>
  <tileset firstgid="61" source="neko-cafe-furnitures.tsx"/>
  <tileset firstgid="181" source="trashbin.tsx"/>
@@ -45,7 +45,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="50" name="Machines and Furniture" width="16" height="16">
+ <layer id="50" name="Machines and Furniture" width="16" height="16" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -65,7 +65,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="88" name="Front" width="16" height="16">
+ <layer id="88" name="Front" width="16" height="16" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -85,7 +85,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="70" name="cleaner machine display 2" width="16" height="16" offsetx="-9" offsety="0">
+ <layer id="70" name="cleaner machine display 2" width="16" height="16" locked="1" offsetx="-9" offsety="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -105,7 +105,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="71" name="cleaner machine display 1" width="16" height="16" offsetx="12" offsety="0">
+ <layer id="71" name="cleaner machine display 1" width="16" height="16" locked="1" offsetx="12" offsety="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -125,7 +125,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="66" name="Coffee Makers" width="16" height="16">
+ <layer id="66" name="Coffee Makers" width="16" height="16" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -145,7 +145,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="78" name="Cooked Produce Display Box Red 1" width="16" height="16" visible="0" tintcolor="#c84b4b" offsetx="-7.5" offsety="3.88889">
+ <layer id="78" name="Cooked Produce Display Box Red 1" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -165,7 +165,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="74" name="Cooked Produce Display Box Yellow 1" width="16" height="16" visible="0" tintcolor="#e7ce15" offsetx="-7.5" offsety="3.88889">
+ <layer id="74" name="Cooked Produce Display Box Yellow 1" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -185,7 +185,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="79" name="Cooked Produce Display Box Green 1" width="16" height="16" visible="0" tintcolor="#48d86a" offsetx="-7.5" offsety="3.88889">
+ <layer id="79" name="Cooked Produce Display Box Green 1" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -205,7 +205,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="91" name="Cooked Produce Display Box Red 2" width="16" height="16" visible="0" tintcolor="#c84b4b" offsetx="-7.5" offsety="3.88889">
+ <layer id="91" name="Cooked Produce Display Box Red 2" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -225,7 +225,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="90" name="Cooked Produce Display Box Yellow 2" width="16" height="16" visible="0" tintcolor="#e7ce15" offsetx="-7.5" offsety="3.88889">
+ <layer id="90" name="Cooked Produce Display Box Yellow 2" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -245,7 +245,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="89" name="Cooked Produce Display Box Green 2" width="16" height="16" visible="0" tintcolor="#48d86a" offsetx="-7.5" offsety="3.88889">
+ <layer id="89" name="Cooked Produce Display Box Green 2" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a" offsetx="-7.5" offsety="3.88889">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -265,7 +265,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="73" name="Pastry Produce Display Box Red 1" width="16" height="16" visible="0" tintcolor="#c84b4b" offsetx="7.77778" offsety="6.94444">
+ <layer id="73" name="Pastry Produce Display Box Red 1" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b" offsetx="7.77778" offsety="6.94444">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -285,7 +285,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="85" name="Pastry Produce Display Box Yellow 1" width="16" height="16" visible="0" tintcolor="#e7ce15" offsetx="7.77778" offsety="6.94444">
+ <layer id="85" name="Pastry Produce Display Box Yellow 1" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15" offsetx="7.77778" offsety="6.94444">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -305,7 +305,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="84" name="Pastry Produce Display Box Green 1" width="16" height="16" visible="0" tintcolor="#48d86a" offsetx="7.77778" offsety="6.94444">
+ <layer id="84" name="Pastry Produce Display Box Green 1" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a" offsetx="7.77778" offsety="6.94444">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -325,7 +325,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="72" name="Coffee Produce Display Box Red 1" width="16" height="16" visible="0" tintcolor="#c84b4b">
+ <layer id="72" name="Coffee Produce Display Box Red 1" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -345,7 +345,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="87" name="Coffee Produce Display Box Yellow 1" width="16" height="16" visible="0" tintcolor="#e7ce15">
+ <layer id="87" name="Coffee Produce Display Box Yellow 1" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -365,7 +365,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="86" name="Coffee Produce Display Box Green 1" width="16" height="16" visible="0" tintcolor="#48d86a">
+ <layer id="86" name="Coffee Produce Display Box Green 1" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -385,7 +385,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="94" name="Coffee Produce Display Box Red 2" width="16" height="16" visible="0" tintcolor="#c84b4b">
+ <layer id="94" name="Coffee Produce Display Box Red 2" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -405,7 +405,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="93" name="Coffee Produce Display Box Yellow 2" width="16" height="16" visible="0" tintcolor="#e7ce15">
+ <layer id="93" name="Coffee Produce Display Box Yellow 2" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -425,7 +425,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="92" name="Coffee Produce Display Box Green 2" width="16" height="16" visible="0" tintcolor="#48d86a">
+ <layer id="92" name="Coffee Produce Display Box Green 2" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -445,7 +445,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="97" name="Coffee Produce Display Box Red 3" width="16" height="16" visible="0" tintcolor="#c84b4b">
+ <layer id="97" name="Coffee Produce Display Box Red 3" width="16" height="16" visible="0" locked="1" tintcolor="#c84b4b">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -465,7 +465,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="96" name="Coffee Produce Display Box Yellow 3" width="16" height="16" visible="0" tintcolor="#e7ce15">
+ <layer id="96" name="Coffee Produce Display Box Yellow 3" width="16" height="16" visible="0" locked="1" tintcolor="#e7ce15">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -485,7 +485,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="95" name="Coffee Produce Display Box Green 3" width="16" height="16" visible="0" tintcolor="#48d86a">
+ <layer id="95" name="Coffee Produce Display Box Green 3" width="16" height="16" visible="0" locked="1" tintcolor="#48d86a">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -525,9 +525,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="76" name="Pastry Produce Display" width="16" height="16" visible="0" locked="1" offsetx="7.77778" offsety="6.94444">
+ <layer id="75" name="Coffee Produce Display" width="16" height="16" visible="0" locked="1">
   <data encoding="csv">
-3792,3818,3804,3794,0,0,0,0,0,0,0,0,0,0,0,0,
+3757,3756,3759,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -545,9 +545,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="75" name="Coffee Produce Display" width="16" height="16" visible="0" locked="1">
+ <layer id="76" name="Pastry Produce Display" width="16" height="16" visible="0" locked="1" offsetx="7.77778" offsety="6.94444">
   <data encoding="csv">
-3757,3756,3759,0,0,0,0,0,0,0,0,0,0,0,0,0,
+3792,3818,3804,3794,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -805,6 +805,26 @@
 153,0,0,0,0,0,0,0,0,0,0,0,0,0,0,153,
 153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,
 0,0,0,0,0,0,0,0,0,0,0,0,153,153,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="98" name="Inventory" width="16" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,2801,2801,2801,2801,2801,2801,2801,2801,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
