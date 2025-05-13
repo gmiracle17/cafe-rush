@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.MathUtils;
@@ -54,7 +53,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         orderHandling = new OrderHandling();
-        Gdx.app.log("DEBUG", "OrderHandling initialized: " + (orderHandling != null));
 
 
         int tileWidth = 16;
@@ -65,9 +63,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         tiledMap = new TmxMapLoader().load("cafe-rush-maps/Cafe with Product Options.tmx");
         tMR = new OrthogonalTiledMapRenderer(tiledMap, unitScale);
-
-        MapLayer seatLayer = tiledMap.getLayers().get("Seats"); 
-        MapObjects seats = seatLayer.getObjects();  
         
         // center map
         float mapWidth = (tiledMap.getProperties().get("width", Integer.class)) * 16 * unitScale;
