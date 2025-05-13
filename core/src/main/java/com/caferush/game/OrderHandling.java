@@ -97,21 +97,33 @@ public class OrderHandling {
     }
 
     try {
+        float bubbleScale = 1.5f;
+        float iconScale = 2.0f;
+        float scaledWidth = orderBubble.getWidth() * bubbleScale;
+        float scaledHeight = orderBubble.getHeight() * bubbleScale;
+        
+
         for (ObjectMap.Entry<OrderPosition, Integer> entry : ordersPopup) {
             OrderPosition seatPos = entry.key;
             TextureRegion icon = orderImage[entry.value];
+            float iconWidth = icon.getRegionWidth() * iconScale;
+            float iconHeight = icon.getRegionHeight() * iconScale;
             
             float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
             float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
             
-            batch.draw(orderBubble, bubbleX, bubbleY);
+                    
+            batch.draw(orderBubble, bubbleX, bubbleY, scaledWidth, scaledHeight);
+
+            // position icon in bubble
             batch.draw(icon,
-                bubbleX + (orderBubble.getWidth() - icon.getRegionWidth())/2f,
-                bubbleY + (orderBubble.getHeight() - icon.getRegionHeight())/2f
+                bubbleX + (scaledWidth - iconWidth)/2f,  
+                bubbleY + (scaledHeight - iconHeight)/2f + 9f, 
+                iconWidth, iconHeight
             );
         }
     } finally {
-
+        
     }
 }
 

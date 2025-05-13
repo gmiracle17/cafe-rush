@@ -381,15 +381,15 @@
   <object id="27" gid="114" x="31.4546" y="175.454" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="1"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="35" gid="114" x="31.0909" y="192" width="16" height="16">
    <properties>
     <property name="Seat 2" type="int" value="2"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="36" gid="114" x="79.2727" y="175.455" width="16" height="16">
@@ -402,36 +402,36 @@
   <object id="37" gid="114" x="79.4545" y="191.455" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="3"/>
-    <property name="orderpositionx" type="float" value="2"/>
-    <property name="orderpositiony" type="float" value="8"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="38" gid="114" x="111.455" y="191.636" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="5"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="39" gid="114" x="112" y="175.818" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="6"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="40" gid="114" x="159.636" y="175.818" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="7"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="41" gid="114" x="159.818" y="191.636" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="8"/>
-    <property name="orderpositionx" type="float" value="-40"/>
-    <property name="orderpositiony" type="float" value="-40"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
  </objectgroup>
