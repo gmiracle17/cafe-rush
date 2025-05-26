@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
+    "activeFile": "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/Cafe Map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -21,11 +21,11 @@
             "scaleInEditor": 3
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx": {
-            "scale": 5.5,
+            "scale": 4,
             "selectedLayer": 15,
             "viewCenter": {
-                "x": 62.81818181818181,
-                "y": 136.0909090909091
+                "x": 125.75,
+                "y": 224.625
             }
         },
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx#neko-cafe-furnitures": {
@@ -51,6 +51,58 @@
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/trashbin.tsx": {
             "scaleInDock": 1
         },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/Cafe Map.tmx": {
+            "expandedObjectLayers": [
+                99
+            ],
+            "scale": 4,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 129.625,
+                "y": 131.625
+            }
+        },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/food-and-beverages.tsx": {
+            "scaleInDock": 2
+        },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/neko-cafe-furnitures.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/neko-cafe-tilemap.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/option-boxes.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/trashbin.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/Cafe with Product Options.tmx": {
+            "expandedObjectLayers": [
+                60
+            ],
+            "scale": 3.0659090909090905,
+            "selectedLayer": 15,
+            "viewCenter": {
+                "x": 127.36842105263159,
+                "y": 129.9777613046701
+            }
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/Cafe with Product Options.tmx#neko-cafe-furnitures": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/food-and-beverages.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/neko-cafe-tilemap.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/option-boxes.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/trashbin.tsx": {
+            "scaleInDock": 1
+        },
         "C:/assets/cafe-rush-maps/cat-black-side.tsx": {
             "scaleInDock": 1
         },
@@ -66,15 +118,15 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
-        "cat-black-front.tsx",
-        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
-        "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/menu-items-caferush.tsx"
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/Cafe Map.tmx"
     ],
     "project": "black-cat.tiled-project",
     "property.type": "float",
     "recentFiles": [
-        "cat-black-front.tsx",
+        "C:/Users/Lenovo/Downloads/cafe-rush-5-10-2025-Click/cafe-rush-5-10-2025-Click/assets/Cafe Map.tmx",
+        "C:/Users/Lenovo/OneDrive/ドキュメント/assets/cafe-rush-maps/Cafe with Product Options.tmx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/menu-items-caferush.tsx",
+        "cat-black-front.tsx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/Cafe with Product Options.tmx",
         "C:/CMSC125MP/cafe-rush/assets/cafe-rush-maps/All.tsx",
         "All.tsx"

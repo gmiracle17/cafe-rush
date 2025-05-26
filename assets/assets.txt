@@ -1,3 +1,4 @@
+cafe-rush-maps/Cafe Map.tmx
 cafe-rush-maps/Cafe with Product Options.tmx
 cafe-rush-maps/food-and-beverages.tsx
 cafe-rush-maps/images/Bar katto 2.0 icon sheet.png
@@ -15,6 +16,24 @@ cafe-rush-maps/menu-items-caferush.tsx
 cafe-rush-maps/neko-cafe-furnitures.tsx
 cafe-rush-maps/neko-cafe-tilemap.tsx
 cafe-rush-maps/option-boxes.tsx
+cafe-rush-maps/pngs/Bar Katto breakfast iconset .png
+cafe-rush-maps/pngs/Bar katto 2.0 icon sheet.png
+cafe-rush-maps/pngs/Cover.jpeg
+cafe-rush-maps/pngs/FOOD.png
+cafe-rush-maps/pngs/Interiors_free_16x16.png
+cafe-rush-maps/pngs/Room_Builder_free_16x16.png
+cafe-rush-maps/pngs/cat-black-back.png
+cafe-rush-maps/pngs/cat-black-front.png
+cafe-rush-maps/pngs/cat-black-side.png
+cafe-rush-maps/pngs/cat-orange-back.png
+cafe-rush-maps/pngs/cat-orange-front.png
+cafe-rush-maps/pngs/cat-orange-side.png
+cafe-rush-maps/pngs/cat-waiter-back.png
+cafe-rush-maps/pngs/cat-waiter-front.png
+cafe-rush-maps/pngs/cat-waiter-side.png
+cafe-rush-maps/pngs/neko-cafe-food.png
+cafe-rush-maps/pngs/neko-cafe-furnitures.png
+cafe-rush-maps/pngs/neko-cafe-tilemap.png
 cafe-rush-maps/trashbin.tsx
 libgdx.png
 ui/font-list.fnt

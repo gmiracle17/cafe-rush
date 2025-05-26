@@ -112,7 +112,7 @@ public class OrderHandling {
             float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
             float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
             
-                    
+            // draw bubble      
             batch.draw(orderBubble, bubbleX, bubbleY, scaledWidth, scaledHeight);
 
             // position icon in bubble
