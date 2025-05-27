@@ -2,9 +2,12 @@ package com.caferush.game;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 
 public class Machines {
+
+    static Sound ding = Gdx.audio.newSound(Gdx.files.internal("sounds/ding-101492.mp3"));
 
     public static abstract class Machine extends Thread {
         protected volatile boolean isBusy = false;
@@ -25,6 +28,7 @@ public class Machines {
         protected int displayY;
 
         protected TiledMap map;
+        private Sound beepSound;
 
         protected final int machineId;
 
@@ -92,6 +96,7 @@ public class Machines {
                 MachineHandler.setStatusColor(map, this, " Yellow ");
                 Thread.sleep(processTime / 2);
 
+                ding.play();
                 MachineHandler.setStatusColor(map, this, " Green ");
                 Thread.sleep(5000); // simulate user collecting
 

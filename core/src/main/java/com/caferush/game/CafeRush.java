@@ -1,6 +1,9 @@
 package com.caferush.game;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -23,8 +26,9 @@ import java.util.ArrayList;
  * Main game class for Cafe Rush
  * Request: Please make the range for clicking closer and for coffee maker, base it on specified coffee maker locations
  */
-public class CafeRush extends Game implements InputProcessor {
+public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
+    private Music bgm;
 
     private static final float VIRTUAL_WIDTH = 1000;
     private static final float VIRTUAL_HEIGHT = 720;
@@ -54,6 +58,7 @@ public class CafeRush extends Game implements InputProcessor {
 
     /* All Machines */
     Machines.Machine CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1,6, 10, 6, 11);
+
     Machines.Machine CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2,7, 10, 7, 11);
     Machines.Machine CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3,8, 10, 8, 11);
 
@@ -111,6 +116,11 @@ public class CafeRush extends Game implements InputProcessor {
 
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(this);
+
+        bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
+        bgm.setLooping(true);
+        bgm.setVolume(0.2f);
+        bgm.play();
     }
 
     @Override
@@ -336,6 +346,10 @@ public class CafeRush extends Game implements InputProcessor {
         if (backTexture != null) backTexture.dispose();
         if (sideTexture != null) sideTexture.dispose();
         if (batch != null) batch.dispose();
+        if (bgm != null) {
+            bgm.stop();
+            bgm.dispose();
+        }
     }
 
     @Override

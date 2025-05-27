@@ -29,6 +29,8 @@ pngs/cat-waiter-side.png
 pngs/neko-cafe-food.png
 pngs/neko-cafe-furnitures.png
 pngs/neko-cafe-tilemap.png
+sounds/bgm.mp3
+sounds/ding-101492.mp3
 trashbin.tsx
 ui/font-list.fnt
 ui/font-subtitle.fnt
