@@ -159,7 +159,7 @@ public class CafeRush extends Game implements InputProcessor {
 
         // Render map and character
         camera.update();
-        int[] foregroundIndices = {3, 13, 14, 15, 27, 31, 32, 33};
+        int[] foregroundIndices = {3, 14, 15, 16, 28, 32, 33, 34};
 
         // Create an array for background layers (everything except the foreground one)
         ArrayList<Integer> backgroundLayerIndices = new ArrayList<>();
@@ -222,6 +222,9 @@ public class CafeRush extends Game implements InputProcessor {
         if (orderHandling != null) {
             orderHandling.renderOrders(batch, UNIT_SCALE);
         }
+
+        customerHandler.renderSpawnPatience(batch, delta);
+        
         batch.end();
 
         for (int index : foregroundIndices) {

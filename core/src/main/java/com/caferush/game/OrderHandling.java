@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.caferush.game.CustomerHandler.Customer;
@@ -115,20 +114,22 @@ public class OrderHandling {
                 float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
                 float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
                 
-                // Choose bubble based on customer patience
+
                 Texture bubbleToDraw;
-                if (customer != null && customer.maxPatienceTime > 0) {
-                    float patienceRatio = customer.remainingPatienceTime / customer.maxPatienceTime;
-                    if (patienceRatio < 0.30f) {
-                        bubbleToDraw = speechBubbleMinimal;
-                    } else if (patienceRatio < 0.50f) {
-                        bubbleToDraw = speechBubbleModerate;
-                    } else {
-                        bubbleToDraw = orderBubble;
-                    }
-                } else {
-                    bubbleToDraw = orderBubble;
-                }
+                    if (customer != null && customer.maxPatienceTime > 0) {
+                        synchronized(customer) {
+                        
+                            if (customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime < 0.30f) {
+                                bubbleToDraw = speechBubbleMinimal;
+                            } else if (customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime < 0.50f) {
+                                bubbleToDraw = speechBubbleModerate;
+                            } else {
+                                bubbleToDraw = orderBubble;
+                            }
+                        }
+                        } else {
+                            bubbleToDraw = orderBubble;
+                        }
 
                 // Draw the speech bubble
                 batch.draw(bubbleToDraw, bubbleX, bubbleY, scaledWidth, scaledHeight);

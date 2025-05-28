@@ -2,6 +2,7 @@ package com.caferush.game;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -11,6 +12,11 @@ public class CustomerHandler {
     private Array<Texture> characterSprites;    
     private Array<TextureRegion> customerSprites;
     private OrderHandling orderHandling;
+    
+    // Spawn point patience bubble textures
+    private Texture spawnBubbleNormal;
+    private Texture spawnBubbleModerate; 
+    private Texture spawnBubbleMinimal;
 
     private CustomerSpawner spawnerThread;
     private volatile boolean isRunning = true;
@@ -20,6 +26,8 @@ public class CustomerHandler {
     private float maxSpawnDelay = 8.0f; // maximum seconds between spawns
     private int maxCustomers = 5; // maximum customers at once
     private static final float SPAWN_RADIUS = 30f;
+    public float spawnX = 800; 
+    public float spawnY = 210; 
 
     public CustomerHandler(OrderHandling orderHandling) {
         this.orderHandling = orderHandling;
@@ -50,6 +58,15 @@ public class CustomerHandler {
 
         customerSprites.add(new TextureRegion(catBlackSheet, 0*16, 0*16, spriteWidth, spriteHeight));
         customerSprites.add(new TextureRegion(catOrangeSheet, 0*16, 0*16, spriteWidth, spriteHeight));
+        
+        // Load spawn patience bubble textures
+        loadSpawnBubbleTextures();
+    }
+    
+    private void loadSpawnBubbleTextures() {
+        spawnBubbleNormal = new Texture("pngs/waiting-normal.png");
+        spawnBubbleModerate = new Texture("pngs/waiting-moderate.png");
+        spawnBubbleMinimal = new Texture("pngs/waiting-minimal.png");
     }
 
     public void addCustomer(float x, float y) {
@@ -64,44 +81,99 @@ public class CustomerHandler {
             
             customers.add(customer);
             
-            // Start patience timer for this customer
-            customer.startPatienceTimer();
+            // Start spawn patience timer (not seated yet)
+            customer.startWaitingforSeatTimer();
         }
     }
 
     public void removeCustomer(Customer customer) {
         synchronized(customersLock) {
-            customer.stopPatienceTimer();
+            customer.stopAllTimers();
             customers.removeValue(customer, true);
         
-        if (orderHandling != null) {
-            orderHandling.removeOrderByCustomer(customer);
-        }
+            if (orderHandling != null) {
+                orderHandling.removeOrderByCustomer(customer);
+            }
         }
     }
     
-    // Update method to be called from your game loop
+    public void seatCustomer(Customer customer) {
+        if (customer != null && !customer.isSeated) {
+            customer.isSeated = true;
+            customer.stopWaitingforSeatTimer();// Stop spawn timer
+            customer.startWaitingforOrderTimer(); // Start seated timer
+            System.out.println("Customer seated - switching to order patience timer");
+        }
+    }
+    
     public void update(float deltaTime) {
         synchronized(customersLock) {
-            // Check for customers whose patience has run out
             for (int i = customers.size - 1; i >= 0; i--) {
                 Customer customer = customers.get(i);
                 if (customer.hasLostPatience()) {
                     removeCustomer(customer);
-                    System.out.println("Patience timer ran out!");
+                    if (customer.isSeated) {
+                        System.out.println("Seated customer lost patience waiting for order!");
+                    } else {
+                        System.out.println("Customer lost patience waiting to be seated!");
+                    }
                 }
             }
         }
     }
-
-    private boolean isSpawnPointClear(float x, float y) {
-    for (Customer customer : customers) {
-        if (customer.position.dst(x, y) < SPAWN_RADIUS) {
-            return false; 
+    
+    // Method to render spawn point patience bubbles
+    public void renderSpawnPatience(SpriteBatch batch, float UNIT_SCALE) {
+        synchronized(customersLock) {
+            for (Customer customer : customers) {
+                if (!customer.isSeated && customer.isInSpawnPhase()) {
+                    renderCustomerSpawnBubble(batch, customer, UNIT_SCALE);
+                }
+            }
         }
     }
-    return true;
+    
+    private void renderCustomerSpawnBubble(SpriteBatch batch, Customer customer, float UNIT_SCALE) {
+        float bubbleScale = 1.5f;
+        float bubbleOffsetX = 70f;  
+        float bubbleOffsetY = -290f; 
+        
+        float bubbleX = (customer.position.x + bubbleOffsetX);
+        float bubbleY = (customer.position.y + bubbleOffsetY);
+        
+        Texture bubbleToDraw = getSpawnPatienceBubble(customer);
+        
+        if (bubbleToDraw != null) {
+            float scaledWidth = bubbleToDraw.getWidth() * bubbleScale;
+            float scaledHeight = bubbleToDraw.getHeight() * bubbleScale;
+            
+            batch.draw(bubbleToDraw, bubbleX - scaledWidth/2f, bubbleY, scaledWidth, scaledHeight);
+    }
 }
+    
+    private Texture getSpawnPatienceBubble(Customer customer) {
+        if (customer.maxPatienceTime > 0) {
+            float patienceRatio = customer.remainingPatienceTime / customer.maxPatienceTime;
+               
+            if (patienceRatio < 0.30f) {
+                return spawnBubbleMinimal; 
+            } else if (patienceRatio < 0.50f) {
+                return spawnBubbleModerate; 
+            } else {
+                return spawnBubbleNormal; 
+            }
+        }
+        return spawnBubbleNormal;
+    }
+
+    private boolean isSpawnPointClear(float x, float y) {
+        for (Customer customer : customers) {
+            if (customer.position.dst(x, y) < SPAWN_RADIUS) {
+                return false; 
+            }
+        }
+        return true;
+    }
 
     private class CustomerSpawner extends Thread {
         @Override
@@ -132,59 +204,82 @@ public class CustomerHandler {
         }
     }
 
-    // Customer Patience Timer Thread
     private class CustomerPatienceTimer extends Thread {
-        private Customer customer;
-        private volatile boolean timerRunning = true;
-        private float patienceTime;
+    private Customer customer;
+    private volatile boolean timerRunning = true;
+    private float patienceTime;
+    private String timerType; // "spawn" or "seated"
+    
+    public CustomerPatienceTimer(Customer customer, float patienceTime, String timerType) {
+        this.customer = customer;
+        this.patienceTime = patienceTime;
+        this.timerType = timerType;
+    }
+
+    @Override
+    public void run() {
+        float updateInterval = 0.1f;
         
-        public CustomerPatienceTimer(Customer customer) {
-            this.customer = customer;
-            this.patienceTime = 10.0f; 
-            customer.maxPatienceTime = patienceTime;
-            customer.remainingPatienceTime = patienceTime;
-        }
-
-        @Override
-        public void run() {
-            float updateInterval = 0.1f;
-            while (timerRunning && customer.remainingPatienceTime > 0) {
-                try {
-                    Thread.sleep((long)(updateInterval * 1000));
-                    customer.remainingPatienceTime -= updateInterval;
+        // Update the appropriate timer based on type
+        while (timerRunning) {
+            try {
+                Thread.sleep((long)(updateInterval * 1000));
+                
+                if (timerType.equals("spawn")) {
+                    customer.remainingWaitingforSeatTime -= updateInterval;
+                    customer.remainingPatienceTime = customer.remainingWaitingforSeatTime;
                     
-                    // Debug output to see patience decreasing
-                    if ((int)(customer.remainingPatienceTime * 10) % 10 == 0) {
+                    if (customer.remainingWaitingforSeatTime <= 0) {
+                        customer.losePatience();
+                        break;
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                } else if (timerType.equals("seated")) {
+                    synchronized(customer) {
+                        customer.remainingWaitingforOrderTime -= updateInterval;
+                        customer.remainingPatienceTime = customer.remainingWaitingforOrderTime;
+                    }
+                    
+                    if (customer.remainingWaitingforOrderTime <= 0) {
+                        customer.losePatience();
+                        break;
+                    }
                 }
+                
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
-
-            if (timerRunning && customer.remainingPatienceTime <= 0) {
-                customer.losePatience();
-            }
-        }
-
-        public void stopTimer() {
-            timerRunning = false;
-            this.interrupt();
         }
     }
+
+    public void stopTimer() {
+        timerRunning = false;
+        this.interrupt();
+    }
+}
 
     public class Customer {
         public Vector2 position = new Vector2();
         public Vector2 offset = new Vector2();
-        public TextureRegion sprite;
+        public TextureRegion sprite; 
         public boolean beingDragged;
         public boolean isSeated; 
 
         public float maxPatienceTime;
         public float remainingPatienceTime;
 
-        // Patience system
-        private CustomerPatienceTimer patienceTimer;
+        public float maxWaitingforSeatTime;
+        public float remainingWaitingforSeatTime;
+
+        public volatile float remainingWaitingforOrderTime;
+        public volatile float maxWaitingforOrderTime;
+
+
+        // Patience system with separate timers
+        private float patienceAtSpawn = 30f;   // waits 30 seconds at spawn point
+        private float patienceAtSeat = 60f;    // waits 60 seconds after seated
+        private CustomerPatienceTimer spawnPatienceTimer;
+        private CustomerPatienceTimer seatedPatienceTimer;
         private volatile boolean hasLostPatience = false;
 
         public Customer() {
@@ -192,18 +287,52 @@ public class CustomerHandler {
             this.beingDragged = false;
         }
         
-        public void startPatienceTimer() {
-            if (patienceTimer == null) {
-                patienceTimer = new CustomerPatienceTimer(this);
-                patienceTimer.start();
+        public void startWaitingforSeatTimer() {
+            if (spawnPatienceTimer == null) {
+                this.remainingPatienceTime = patienceAtSpawn;
+                this.maxPatienceTime = patienceAtSpawn;
+                
+
+                this.remainingWaitingforSeatTime = patienceAtSpawn;
+                this.maxWaitingforSeatTime = patienceAtSpawn;
+                
+                spawnPatienceTimer = new CustomerPatienceTimer(this, patienceAtSpawn, "spawn");
+                spawnPatienceTimer.start();
             }
         }
         
-        public void stopPatienceTimer() {
-            if (patienceTimer != null) {
-                patienceTimer.stopTimer();
-                patienceTimer = null;
+        public void stopWaitingforSeatTimer() {
+            if (spawnPatienceTimer != null) {
+                spawnPatienceTimer.stopTimer();
+                spawnPatienceTimer = null;
             }
+        }
+        
+        public void startWaitingforOrderTimer() {
+            if (seatedPatienceTimer == null) {
+                // Set the variables that the timer and bubble rendering use
+                this.remainingPatienceTime = patienceAtSeat;
+                this.maxPatienceTime = patienceAtSeat;
+                
+                // Also set the specific waiting variables for consistency
+                this.remainingWaitingforOrderTime = patienceAtSeat;
+                this.maxWaitingforOrderTime = patienceAtSeat;
+
+                seatedPatienceTimer = new CustomerPatienceTimer(this, patienceAtSeat, "seated");
+                seatedPatienceTimer.start();
+            }
+        }
+
+        public void stopWaitingforOrderTimer() {
+            if (seatedPatienceTimer != null) {
+                seatedPatienceTimer.stopTimer();
+                seatedPatienceTimer = null;
+            }
+        }
+        
+        public void stopAllTimers() {
+            stopWaitingforOrderTimer();
+            stopWaitingforSeatTimer();
         }
         
         public void losePatience() {
@@ -213,9 +342,39 @@ public class CustomerHandler {
         public boolean hasLostPatience() {
             return hasLostPatience;
         }
+        
+        public float getWaitingforSeatTime() {
+            return patienceAtSpawn;
+        }
+        
+        public float getWaitingforOrderTime() {
+            return patienceAtSeat;
+        }
+        
+        public void setWaitingforSeatTime(float time) {
+            this.patienceAtSpawn = time;
+        }
+        
+        public void setWaitingforOrderTime(float time) {
+            this.patienceAtSeat = time;
+        }
+        
+        // Helper methods to check timer state
+        public boolean isInSpawnPhase() {
+            return !isSeated && spawnPatienceTimer != null;
+        }
+        
+        public boolean isInSeatedPhase() {
+            return isSeated && seatedPatienceTimer != null;
+        }
+        
+        public String getCurrentPhase() {
+            if (isInSeatedPhase()) return "seated";
+            if (isInSpawnPhase()) return "spawn";
+            return "none";
+        }
     }
     
-    // Configuration methods
     public void setSpawnDelay(float min, float max) {
         this.minSpawnDelay = min;
         this.maxSpawnDelay = max;
@@ -226,7 +385,6 @@ public class CustomerHandler {
     }
 
     public void dispose() {
-        // Stop all threads
         isRunning = false;
         
         if (spawnerThread != null) {
@@ -238,16 +396,19 @@ public class CustomerHandler {
             }
         }
         
-        // Stop all customer patience timers
         synchronized(customersLock) {
             for (Customer customer : customers) {
-                customer.stopPatienceTimer();
+                customer.stopAllTimers();
             }
         }
         
-        // Dispose textures
         for (Texture texture : characterSprites) {
             texture.dispose();
         }
+        
+        // Dispose spawn bubble textures
+        if (spawnBubbleNormal != null) spawnBubbleNormal.dispose();
+        if (spawnBubbleModerate != null) spawnBubbleModerate.dispose();
+        if (spawnBubbleMinimal != null) spawnBubbleMinimal.dispose();
     }
 }
