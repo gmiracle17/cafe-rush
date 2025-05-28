@@ -191,7 +191,7 @@ public class CafeRush extends Game implements InputProcessor {
             currentFrame.getRegionWidth() * CHARACTER_SCALE,
             currentFrame.getRegionHeight() * CHARACTER_SCALE);
 
-                // render the seats (object layer)
+        // render the seats (object layer)
         MapLayer seatLayer = tiledMap.getLayers().get("Seats");
             if (seatLayer != null) {
                 for (MapObject obj : seatLayer.getObjects()) {
@@ -207,16 +207,16 @@ public class CafeRush extends Game implements InputProcessor {
             }
 
 
-        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-    if (customer.sprite != null) {
-        batch.draw(
-            customer.sprite,
-            customer.position.x,
-            customer.position.y,
-            customer.sprite.getRegionWidth() * UNIT_SCALE,
-            customer.sprite.getRegionHeight() * UNIT_SCALE
-        );
-    }
+    for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+        if (customer.sprite != null) {
+            batch.draw(
+                customer.sprite,
+                customer.position.x,
+                customer.position.y,
+                customer.sprite.getRegionWidth() * UNIT_SCALE,
+                customer.sprite.getRegionHeight() * UNIT_SCALE
+            );
+        }
 }
 
         if (orderHandling != null) {

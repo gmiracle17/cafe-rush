@@ -19,6 +19,7 @@ public class CustomerHandler {
     private float minSpawnDelay = 3.0f; // minimum seconds between spawns
     private float maxSpawnDelay = 8.0f; // maximum seconds between spawns
     private int maxCustomers = 5; // maximum customers at once
+    private static final float SPAWN_RADIUS = 30f;
 
     public CustomerHandler(OrderHandling orderHandling) {
         this.orderHandling = orderHandling;
@@ -93,6 +94,15 @@ public class CustomerHandler {
         }
     }
 
+    private boolean isSpawnPointClear(float x, float y) {
+    for (Customer customer : customers) {
+        if (customer.position.dst(x, y) < SPAWN_RADIUS) {
+            return false; 
+        }
+    }
+    return true;
+}
+
     private class CustomerSpawner extends Thread {
         @Override
         public void run() {
@@ -107,9 +117,12 @@ public class CustomerHandler {
                     synchronized(customersLock) {
                         shouldSpawn = (customers.size < maxCustomers && isRunning);
                     }
+
+                    float spawnX = 800; 
+                    float spawnY = 210; 
                     
-                    if (shouldSpawn) {
-                        addCustomer(800, 210);
+                    if (shouldSpawn && isSpawnPointClear(spawnX, spawnY)) {
+                        addCustomer(spawnX, spawnY);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

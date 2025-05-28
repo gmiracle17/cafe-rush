@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="100" nextobjectid="20">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="101" nextobjectid="31">
  <tileset firstgid="1" source="neko-cafe-tilemap.tsx"/>
  <tileset firstgid="61" source="neko-cafe-furnitures.tsx"/>
  <tileset firstgid="181" source="trashbin.tsx"/>
@@ -45,7 +45,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="50" name="Machines and Furniture" width="16" height="16" locked="1">
+ <layer id="50" name="Machines and Furniture" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -89,57 +89,57 @@
   <object id="12" gid="114" x="31.9666" y="175.665" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="1"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="13" gid="114" x="32.2916" y="192.236" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="2"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="14" gid="114" x="79.7317" y="175.99" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="3"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="15" gid="114" x="79.7317" y="191.912" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="4"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="16" gid="114" x="112.225" y="175.99" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="6"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="17" gid="114" x="112.225" y="191.587" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="5"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="18" gid="114" x="159.665" y="175.665" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="7"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
   <object id="19" gid="114" x="159.99" y="191.912" width="16" height="16">
    <properties>
     <property name="Seat" type="int" value="8"/>
-    <property name="objectpositionX" type="float" value="-70"/>
-    <property name="objectpositionY" type="float" value="-70"/>
+    <property name="orderpositionx" type="float" value="-70"/>
+    <property name="orderpositiony" type="float" value="-70"/>
    </properties>
   </object>
  </objectgroup>
