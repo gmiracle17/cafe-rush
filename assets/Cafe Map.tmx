@@ -65,72 +65,6 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="99" name="Seats">
-  <object id="12" gid="114" x="32" y="176" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="1"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="13" gid="114" x="32.25" y="192.25" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="2"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="14" gid="114" x="80" y="175.75" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="4"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="15" gid="114" x="79.75" y="192.5" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="3"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="16" gid="114" x="112.25" y="176.5" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="6"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="17" gid="114" x="112.25" y="191.75" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="5"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="18" gid="114" x="159.75" y="176" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="7"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
-  <object id="19" gid="114" x="160" y="191.75" width="16" height="16">
-   <properties>
-    <property name="Seat" type="int" value="8"/>
-    <property name="isChair" type="bool" value="true"/>
-    <property name="orderpositionx" type="float" value="-70"/>
-    <property name="orderpositiony" type="float" value="-70"/>
-   </properties>
-  </object>
- </objectgroup>
  <layer id="88" name="Front" width="16" height="16" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -151,6 +85,64 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="99" name="Seats">
+  <object id="12" gid="114" x="31.9666" y="175.665" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="1"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="13" gid="114" x="32.2916" y="192.236" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="2"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="14" gid="114" x="79.7317" y="175.99" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="3"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="15" gid="114" x="79.7317" y="191.912" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="4"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="16" gid="114" x="112.225" y="175.99" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="6"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="17" gid="114" x="112.225" y="191.587" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="5"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="18" gid="114" x="159.665" y="175.665" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="7"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+  <object id="19" gid="114" x="159.99" y="191.912" width="16" height="16">
+   <properties>
+    <property name="Seat" type="int" value="8"/>
+    <property name="objectpositionX" type="float" value="-70"/>
+    <property name="objectpositionY" type="float" value="-70"/>
+   </properties>
+  </object>
+ </objectgroup>
  <layer id="70" name="cleaner machine display 2" width="16" height="16" locked="1" offsetx="-9" offsety="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

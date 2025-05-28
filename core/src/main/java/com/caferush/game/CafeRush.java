@@ -1,6 +1,7 @@
 package com.caferush.game;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -9,8 +10,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -18,15 +17,10 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.utils.Array;
 import java.util.ArrayList;
 
 
@@ -36,6 +30,7 @@ import java.util.ArrayList;
  */
 public class CafeRush extends Game implements InputProcessor {
 
+    private Music bgm;
 
     private static final float VIRTUAL_WIDTH = 1000;
     private static final float VIRTUAL_HEIGHT = 720;
@@ -44,8 +39,6 @@ public class CafeRush extends Game implements InputProcessor {
     private static final float CHARACTER_HITBOX_REDUCTION = 0.5f;
     private static final float CHARACTER_SCALE = 5f;
     private static final float ANIMATION_FRAME_DURATION = 0.1f;
-    private Stage stage;
-    private DragAndDrop dragAndDrop;
 
 
     private OrderHandling orderHandling;
@@ -127,20 +120,23 @@ public class CafeRush extends Game implements InputProcessor {
         characterWidth = frame.getRegionWidth() * CHARACTER_SCALE;
         characterHeight = frame.getRegionHeight() * CHARACTER_SCALE;
 
-        customerHandler = new CustomerHandler();
-        customerHandler.addCustomer(800, 210); 
-
-        
-        // Spawn initial customer
-        // spawnCustomer();
+        orderHandling = new OrderHandling();
+        customerHandler = new CustomerHandler(orderHandling);
+        customerHandler.addCustomer(800, 210);      
 
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(this);
+
+        bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
+        bgm.setLooping(true);
+        bgm.setVolume(0.2f);
+        bgm.play();
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
+        customerHandler.update(delta);
 
         Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -191,12 +187,16 @@ public class CafeRush extends Game implements InputProcessor {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
+        batch.draw(currentFrame, characterPosition.x, characterPosition.y,
+            currentFrame.getRegionWidth() * CHARACTER_SCALE,
+            currentFrame.getRegionHeight() * CHARACTER_SCALE);
+
                 // render the seats (object layer)
         MapLayer seatLayer = tiledMap.getLayers().get("Seats");
             if (seatLayer != null) {
                 for (MapObject obj : seatLayer.getObjects()) {
-                    if (obj instanceof TextureMapObject){
-                        TextureMapObject seatObj = (TextureMapObject) obj;
+                    if (obj instanceof TiledMapTileMapObject){
+                        TiledMapTileMapObject seatObj = (TiledMapTileMapObject) obj;
                         batch.draw(seatObj.getTextureRegion(), 
                                 seatObj.getX() * UNIT_SCALE, 
                                 seatObj.getY() * UNIT_SCALE,
@@ -206,21 +206,22 @@ public class CafeRush extends Game implements InputProcessor {
                 }
             }
 
+
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-        if (customer.sprite != null) {
-            batch.draw(
-                customer.sprite, 
-                customer.position.x, 
-                customer.position.y,
-                customer.sprite.getRegionWidth() * UNIT_SCALE,  
-                customer.sprite.getRegionHeight() * UNIT_SCALE
-            );
+    if (customer.sprite != null) {
+        batch.draw(
+            customer.sprite,
+            customer.position.x,
+            customer.position.y,
+            customer.sprite.getRegionWidth() * UNIT_SCALE,
+            customer.sprite.getRegionHeight() * UNIT_SCALE
+        );
     }
 }
-        
-        batch.draw(currentFrame, characterPosition.x, characterPosition.y,
-                currentFrame.getRegionWidth() * CHARACTER_SCALE,
-                currentFrame.getRegionHeight() * CHARACTER_SCALE);
+
+        if (orderHandling != null) {
+            orderHandling.renderOrders(batch, UNIT_SCALE);
+        }
         batch.end();
 
         for (int index : foregroundIndices) {
@@ -258,26 +259,6 @@ public class CafeRush extends Game implements InputProcessor {
         return new Animation<>(ANIMATION_FRAME_DURATION, flipped);
     }
 
-    public class Customer {
-        public TextureRegion sprite;
-        public Vector2 position;
-        public boolean isSeated;
-        public boolean beingDragged;
-        public Vector2 offset = new Vector2();
-        public float waitTime = 0; // Track how long customer has been waiting
-        public final float MAX_WAIT_TIME = 30f; // Leave after 30 seconds if not seated
-
-        public Customer(Texture characterSprite) {
-            int frameCol = MathUtils.random(0, 0); 
-            int frameRow = MathUtils.random(0, 0); 
-            this.sprite = new TextureRegion(characterSprite, frameCol * 16, frameRow * 16, 16, 16);
-            this.position = new Vector2(800, 210); // Spawn point
-            this.isSeated = false;
-            this.beingDragged = false;
-        }
-        
-
-    }
 
     private boolean handleCharacterInput(float delta) {
         boolean moved = false;
@@ -411,6 +392,10 @@ public class CafeRush extends Game implements InputProcessor {
         if (backTexture != null) backTexture.dispose();
         if (sideTexture != null) sideTexture.dispose();
         if (batch != null) batch.dispose();
+        if (bgm != null) {
+            bgm.stop();
+            bgm.dispose();
+        }
     }
 
     @Override
@@ -440,7 +425,7 @@ public class CafeRush extends Game implements InputProcessor {
         return false;
     }
 
-    private void handleOptionClick(int tileX, int tileY) {
+      private void handleOptionClick(int tileX, int tileY) {
         boolean processed = false;
 
         for (Machines.Machine machine : machinesList) {
@@ -499,71 +484,80 @@ public class CafeRush extends Game implements InputProcessor {
     }
 
      @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
-        camera.unproject(clickedPosition);
+public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+    Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
+    camera.unproject(clickedPosition);
 
-        // Find which customer is being dragged
-        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-            if (customer.beingDragged) {
-                customer.beingDragged = false;
-                
-                // Try to seat customer and get seat position if successful
-                MapLayer seatLayer = tiledMap.getLayers().get("Seats");
-                if (seatLayer != null) {
-                    for (MapObject obj : seatLayer.getObjects()) {
-                        // Check if seat
-                        if (obj instanceof TextureMapObject) {
-                            TextureMapObject seat = (TextureMapObject) obj;
+    for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+        if (customer.beingDragged) {
+            customer.beingDragged = false;
+            
+            MapLayer seatLayer = tiledMap.getLayers().get("Seats");
+            if (seatLayer != null) {
+                for (MapObject obj : seatLayer.getObjects()) {
+                    if (obj instanceof TiledMapTileMapObject) {
+                        TiledMapTileMapObject seat = (TiledMapTileMapObject) obj;
+                        
+                        // Calculate seat center and bounds
+                        float seatCenterX = seat.getX() * UNIT_SCALE + (seat.getTextureRegion().getRegionWidth() * UNIT_SCALE)/2;
+                        float seatCenterY = seat.getY() * UNIT_SCALE + (seat.getTextureRegion().getRegionHeight() * UNIT_SCALE)/2;
+                        
+                        // Check if dropped near seat center
+                        if (Math.abs(clickedPosition.x - seatCenterX) < 32 && 
+                            Math.abs(clickedPosition.y - seatCenterY) < 32) {
                             
-                            // Calculate seat bounds
-                            Rectangle seatBounds = new Rectangle(
-                                seat.getX() * UNIT_SCALE,
-                                seat.getY() * UNIT_SCALE,
-                                seat.getTextureRegion().getRegionWidth() * UNIT_SCALE,
-                                seat.getTextureRegion().getRegionHeight() * UNIT_SCALE
+                            // Snap to seat center
+                            customer.position.set(
+                                seatCenterX - 30, 
+                                seatCenterY
                             );
-
-                            // Check if dropped on the seat bounds
-                            if (seatBounds.contains(clickedPosition.x, clickedPosition.y)) {
-                                customer.position.set(
-                                    seat.getX() * UNIT_SCALE + (seatBounds.width / 2) - 30,
-                                    seat.getY() * UNIT_SCALE + (seatBounds.height / 2)
-                                );
-                                customer.isSeated = true; 
-
-                            }
+                            customer.isSeated = true;
+                            
+                            int randomOrder = MathUtils.random(orderHandling.getMenuItems().length - 1);
+                            orderHandling.addOrder(seat, randomOrder, customer);
+                            
+                            return true;
                         }
                     }
                 }
-                // If no seat then return to spawn point
-                customer.position.set(800, 210);
-                return true;
             }
+            // Return to spawn if no seat found
+            customer.position.set(800, 210);
+            return true;
         }
-        return false;
     }
+    return false;
+}
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
-        camera.unproject(clickedPosition);
-        Vector2 worldPosition = new Vector2(clickedPosition.x, clickedPosition.y);
-        
-        // Check if any customer was clicked
-        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-            // Only allow dragging customers that aren't seated
-            if (!customer.isSeated && customerClicked(customer, worldPosition)) {
-                customer.beingDragged = true;
-                customer.offset.set(
-                    clickedPosition.x - customer.position.x,
-                    clickedPosition.y - customer.position.y
-                );
-                return true;
-            }
-        }
+public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+    if (button != Input.Buttons.LEFT) {
         return false;
     }
+    
+    Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
+    camera.unproject(clickedPosition);
+    Vector2 worldPosition = new Vector2(clickedPosition.x, clickedPosition.y);
+
+    // 1. Check if any customer was clicked
+    for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+        if (!customer.isSeated && customerClicked(customer, worldPosition)) {
+            customer.beingDragged = true;
+            customer.offset.set(
+                clickedPosition.x - customer.position.x,
+                clickedPosition.y - customer.position.y
+            );
+            return true;  
+        }
+    }
+
+    Vector2 worldCoords = viewport.unproject(new Vector2(screenX, screenY));
+    int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
+    int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
+    handleOptionClick(tileX, tileY);
+
+    return true;  
+}
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
