@@ -124,8 +124,7 @@ public class CafeRush extends Game implements InputProcessor {
         characterHeight = frame.getRegionHeight() * CHARACTER_SCALE;
 
         orderHandling = new OrderHandling();
-        customerHandler = new CustomerHandler(orderHandling);
-        customerHandler.addCustomer(800, 210);      
+        customerHandler = new CustomerHandler(orderHandling);    
 
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(this);

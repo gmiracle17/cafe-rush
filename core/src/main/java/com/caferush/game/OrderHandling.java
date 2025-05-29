@@ -54,7 +54,7 @@ public class OrderHandling {
 
     private void loadSpeechBubbleTextures() {
         speechBubbleModerate = new Texture("pngs/speech-bubble-moderatepatience.png");
-        speechBubbleMinimal = new Texture("pngs/speech-bubble-minimalpatience.png"); // Fixed typo
+        speechBubbleMinimal = new Texture("pngs/speech-bubble-minimalpatience.png");
     }
 
     public void addOrder(TiledMapTileMapObject seat, int menuItemIndex, Customer customer) {
@@ -116,7 +116,7 @@ public class OrderHandling {
                 
 
                 Texture bubbleToDraw;
-                    if (customer != null && customer.maxPatienceTime > 0) {
+                    if (customer != null && customer.remainingWaitingforOrderTime > 0) {
                         synchronized(customer) {
                         
                             if (customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime < 0.30f) {
@@ -155,7 +155,6 @@ public class OrderHandling {
         }
     }
 }
-
 
     public void dispose() {
         orderBubble.dispose();
