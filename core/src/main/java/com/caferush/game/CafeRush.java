@@ -28,10 +28,13 @@ import java.util.ArrayList;
  * Main game class for Cafe Rush
  *
  * */
-public class CafeRush extends Game implements InputProcessor {
+public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private GameMenu gameMenu;
+    private GameControls gameControls;
+    private Instructions instructions;
     private boolean isMenuActive = true;
+    private boolean isInstructionsActive = false;
 
     private Music bgm;
 
@@ -82,7 +85,7 @@ public class CafeRush extends Game implements InputProcessor {
     public void create() {
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT+75, camera);
+        viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT + 75, camera);
         viewport.apply();
 
         // Load and set up map
@@ -91,7 +94,7 @@ public class CafeRush extends Game implements InputProcessor {
 
         // Set up camera position based on map dimensions
         int mapWidth = tiledMap.getProperties().get("width", Integer.class);
-        int mapHeight = tiledMap.getProperties().get("height", Integer.class)-1;
+        int mapHeight = tiledMap.getProperties().get("height", Integer.class) - 1;
         int tileWidth = tiledMap.getProperties().get("tilewidth", Integer.class);
         int tileHeight = tiledMap.getProperties().get("tileheight", Integer.class);
 
@@ -118,14 +121,14 @@ public class CafeRush extends Game implements InputProcessor {
 
         machinesList = new Machines.Machine[]{CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2};
 
-        // for collision detection
+        // For collision detection
         TextureRegion frame = walkDown.getKeyFrames()[0];
         characterWidth = frame.getRegionWidth() * CHARACTER_SCALE;
         characterHeight = frame.getRegionHeight() * CHARACTER_SCALE;
 
         orderHandling = new OrderHandling();
         customerHandler = new CustomerHandler(orderHandling);
-        customerHandler.addCustomer(800, 210);      
+        customerHandler.addCustomer(800, 210);
 
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(this);
@@ -146,6 +149,26 @@ public class CafeRush extends Game implements InputProcessor {
                 Gdx.app.exit(); // Exit the application
             }
         });
+
+        instructions = new Instructions(new Instructions.InstructionListener() {
+            @Override
+            public void onBackToGame() {
+                isInstructionsActive = false;
+            }
+        });
+
+        // Initialize GameControls with listener
+        gameControls = new GameControls(new GameControls.ControlsListener() {
+            @Override
+            public void onLeaveGame() {
+                Gdx.app.log("CafeRush", "Leave button clicked!");
+                isMenuActive = true;
+            }
+            @Override
+            public void onShowInstructions() {
+                isInstructionsActive = true;
+            }
+        });
     }
 
     @Override
@@ -154,6 +177,11 @@ public class CafeRush extends Game implements InputProcessor {
             // Render the game menu
             gameMenu.render(batch);
             return; // Skip the rest of the render method
+        }
+
+        if (isInstructionsActive) {
+            instructions.render(batch);
+            return;
         }
 
         float delta = Gdx.graphics.getDeltaTime();
@@ -166,7 +194,7 @@ public class CafeRush extends Game implements InputProcessor {
         boolean moved = handleCharacterInput(delta);
 
         if (moved) {
-            MachineHandler.hideAllOptions(tiledMap, machinesList);
+            Machines.hideAllOptions(tiledMap, machinesList);
         }
 
         checkNearbyMachines();
@@ -250,6 +278,9 @@ public class CafeRush extends Game implements InputProcessor {
         for (int index : foregroundIndices) {
             tiledMapRenderer.render(new int[] {index});
         }
+
+        // Update and render game controls
+        gameControls.render(batch);
     }
 
 
@@ -380,7 +411,7 @@ public class CafeRush extends Game implements InputProcessor {
     private String checkForSpecificMachine(int centerX, int centerY, int radius, String machineType) {
         for (int y = centerY - radius; y <= centerY + radius; y++) {
             for (int x = centerX - radius; x <= centerX + radius; x++) {
-                String foundType = MachineHandler.checkMachineTypeAtExact(tiledMap, x, y);
+                String foundType = Machines.checkMachineTypeAtExact(tiledMap, x, y);
                 if (foundType != null && foundType.equals(machineType)) {
                     return foundType;
                 }
@@ -391,7 +422,7 @@ public class CafeRush extends Game implements InputProcessor {
 
     /* Shows options of machine if near and clicked */
     private void handleMachineInteraction() {
-        MachineHandler.hideAllOptions(tiledMap, machinesList);
+        Machines.hideAllOptions(tiledMap, machinesList);
 
         if (nearMachineType != null) {
             for (Machines.Machine machine : machinesList) {
@@ -421,6 +452,8 @@ public class CafeRush extends Game implements InputProcessor {
             bgm.dispose();
         }
         if (gameMenu != null) gameMenu.dispose();
+        if (instructions != null) instructions.dispose();
+        if (gameControls != null) gameControls.dispose();
     }
 
     @Override
@@ -452,7 +485,7 @@ public class CafeRush extends Game implements InputProcessor {
         int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
         int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
 
-        MachineHandler.handleOptionsHover(tiledMap, tileX, tileY, machinesList);
+        Machines.handleOptionsHover(tiledMap, tileX, tileY, machinesList);
         return false;
     }
 
@@ -494,24 +527,6 @@ public class CafeRush extends Game implements InputProcessor {
         if (!processed) {
             System.out.println("No available machine to process the order.");
         }
-    }
-
-    private Machines.Machine getMachineAt(int tileX, int tileY) {
-        for (Machines.Machine machine : machinesList) {
-            if (machine.machineLayer != null) {
-                TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.machineLayer);
-                if (layer != null) {
-                    TiledMapTileLayer.Cell cell = layer.getCell(tileX, tileY);
-                    if (cell != null && cell.getTile() != null) {
-                        String prop = cell.getTile().getProperties().get("machine", String.class);
-                        if (machine.machineType.equals(prop)) {
-                            return machine;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 
      @Override
@@ -566,6 +581,16 @@ public class CafeRush extends Game implements InputProcessor {
             if (gameMenu.touchDown(screenX, screenY)) {
                 return true; // Exit button clicked
             }
+        }
+
+        if (isInstructionsActive) {
+            if (instructions.touchDown(screenX, screenY)) {
+                return true;
+            }
+        }
+
+        if (gameControls.touchDown(screenX, screenY)) {
+            return true; // Leave button clicked
         }
 
         if (button != Input.Buttons.LEFT) {

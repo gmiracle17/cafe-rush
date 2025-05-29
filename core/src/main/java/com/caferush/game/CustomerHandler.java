@@ -1,5 +1,7 @@
 package com.caferush.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -27,7 +29,10 @@ public class CustomerHandler {
     private int maxCustomers = 5; // maximum customers at once
     private static final float SPAWN_RADIUS = 30f;
     public float spawnX = 800; 
-    public float spawnY = 210; 
+    public float spawnY = 210;
+
+    static Sound meow = Gdx.audio.newSound(Gdx.files.internal("sounds/meow.mp3"));
+    static Sound angrymeow = Gdx.audio.newSound(Gdx.files.internal("sounds/angry-meow.mp3"));
 
     public CustomerHandler(OrderHandling orderHandling) {
         this.orderHandling = orderHandling;
@@ -114,8 +119,10 @@ public class CustomerHandler {
                     removeCustomer(customer);
                     if (customer.isSeated) {
                         System.out.println("Seated customer lost patience waiting for order!");
+                        angrymeow.play();
                     } else {
                         System.out.println("Customer lost patience waiting to be seated!");
+                        angrymeow.play();
                     }
                 }
             }

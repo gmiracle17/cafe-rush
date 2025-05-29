@@ -1,6 +1,7 @@
 package com.caferush.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -18,6 +19,8 @@ public class GameMenu {
     private Vector2 resumeButtonPosition;
     private Vector2 exitButtonPosition;
 
+    private OrthographicCamera menuCamera;
+
     public interface MenuListener {
         void onStartGame();
         void onExitGame();
@@ -27,8 +30,14 @@ public class GameMenu {
 
     public GameMenu(MenuListener listener) {
         this.listener = listener;
+
         int screenWidth = Gdx.graphics.getWidth();
         int screenHeight = Gdx.graphics.getHeight();
+
+        // Initialize separate camera for menu
+        menuCamera = new OrthographicCamera();
+        menuCamera.setToOrtho(false, screenWidth, screenHeight);
+        menuCamera.update();
 
         // Load textures
         backgroundTexture = new Texture(Gdx.files.internal("Menu Background.png"));
@@ -49,6 +58,9 @@ public class GameMenu {
     }
 
     public void render(SpriteBatch batch) {
+        // Use the menu's own camera
+        batch.setProjectionMatrix(menuCamera.combined);
+
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(startButtonTexture, startButtonPosition.x, startButtonPosition.y, startButtonBounds.width, startButtonBounds.height);
@@ -72,6 +84,7 @@ public class GameMenu {
             if (listener != null) listener.onStartGame();
             return true;
         }
+
         if (exitButtonBounds.contains(screenX, invertedY)) {
             if (listener != null) listener.onExitGame();
             return true;
