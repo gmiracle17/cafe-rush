@@ -104,8 +104,6 @@ public class GameControls {
     public boolean touchDown(int screenX, int screenY) {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
-        Gdx.app.log("GameControls", "Touch down at: " + screenX + ", " + invertedY);
-
         if (screenX >= 60 && screenX <= 160 && invertedY >= 20 && invertedY <= 90) {
             if (listener != null) listener.onLeaveGame();
         }
@@ -116,6 +114,10 @@ public class GameControls {
 
         if (screenX >= 1022 && screenX <= 1095 && invertedY >= 20 && invertedY <= 90) {
             if (listener != null) listener.onControlBGM();
+        }
+
+        if (screenX >= 186 && screenX <= 258 && invertedY >= 20 && invertedY <= 90) {
+            if (listener != null) Gdx.app.log("Game Controls", "Pause Button Clicked!");
         }
 
         return false;

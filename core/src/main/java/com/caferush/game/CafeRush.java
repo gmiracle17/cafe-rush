@@ -162,7 +162,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         gameControls = new GameControls(new GameControls.ControlsListener() {
             @Override
             public void onLeaveGame() {
-                Gdx.app.log("CafeRush", "Leave button clicked!");
                 isMenuActive = true;
             }
             @Override
