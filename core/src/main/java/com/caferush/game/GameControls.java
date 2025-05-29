@@ -11,15 +11,25 @@ import com.badlogic.gdx.math.Vector2;
 
 public class GameControls {
 
-    private Texture leaveButtonTexture;
-    private Texture helpButtonTexture;
-    private Rectangle leaveButtonBounds;
-    private Rectangle helpButtonBounds;
-    private Vector2 leaveButtonPosition;
-    private Vector2 helpButtonPosition;
+    private final Texture leaveButtonTexture;
+    private final Texture helpButtonTexture;
+    private final Texture pauseButtonTexture;
+    private final Texture soundOnButtonTexture;
+    private final Texture soundOffButtonTexture;
+
+    private final Rectangle leaveButtonBounds;
+    private final Rectangle helpButtonBounds;
+    private final Rectangle pauseButtonBounds;
+    private final Rectangle soundButtonBounds;
+
+    private final Vector2 leaveButtonPosition;
+    private final Vector2 helpButtonPosition;
+    private final Vector2 pauseButtonPosition;
+    private final Vector2 soundButtonPosition;
 
     private final BitmapFont font;
     private final GlyphLayout layout;
+    private boolean mute;
 
     private int day;
     private int goal;
@@ -28,6 +38,7 @@ public class GameControls {
     public interface ControlsListener {
         void onLeaveGame();
         void onShowInstructions();
+        void onControlBGM();
     }
 
     private ControlsListener listener;
@@ -46,21 +57,27 @@ public class GameControls {
 
         leaveButtonTexture = new Texture(Gdx.files.internal("leave.png"));
         helpButtonTexture = new Texture(Gdx.files.internal("help.png"));
+        pauseButtonTexture = new Texture(Gdx.files.internal("pause.png"));
+        soundOnButtonTexture = new Texture(Gdx.files.internal("soundon.png"));
+        soundOffButtonTexture = new Texture(Gdx.files.internal("soundoff.png"));
 
         int buttonWidth = 100;
-        float aspectRatio = (float) leaveButtonTexture.getHeight() / leaveButtonTexture.getWidth();
-        int buttonHeight = (int) (buttonWidth * aspectRatio);
+        int buttonHeight = 60;
 
-        leaveButtonPosition = new Vector2(36, 95);
-        helpButtonPosition = new Vector2(890, 95);
+        leaveButtonPosition = new Vector2(36, 100);
+        helpButtonPosition = new Vector2(890, 100);
+        pauseButtonPosition = new Vector2(136, 100);
+        soundButtonPosition = new Vector2(790, 100);
+
         leaveButtonBounds = new Rectangle(leaveButtonPosition.x, leaveButtonPosition.y, buttonWidth, buttonHeight);
         helpButtonBounds = new Rectangle(helpButtonPosition.x, helpButtonPosition.y, buttonWidth, buttonHeight);
+        pauseButtonBounds = new Rectangle(pauseButtonPosition.x, pauseButtonPosition.y, buttonWidth, buttonHeight - 7);
+        soundButtonBounds = new Rectangle(soundButtonPosition.x, soundButtonPosition.y, buttonWidth, buttonHeight - 5);
     }
 
     public void render(SpriteBatch batch) {
         batch.begin();
 
-        // Center the day and earnings text
         String earningsText = earning + " / " + goal;
         String dayText = "Day: " + day;
 
@@ -76,6 +93,10 @@ public class GameControls {
 
         batch.draw(leaveButtonTexture, leaveButtonPosition.x, leaveButtonPosition.y, leaveButtonBounds.width, leaveButtonBounds.height);
         batch.draw(helpButtonTexture, helpButtonPosition.x, helpButtonPosition.y, helpButtonBounds.width, helpButtonBounds.height);
+        batch.draw(pauseButtonTexture, pauseButtonPosition.x, pauseButtonPosition.y, pauseButtonBounds.width, pauseButtonBounds.height);
+
+        Texture currentSoundTexture = mute ? soundOffButtonTexture : soundOnButtonTexture;
+        batch.draw(currentSoundTexture, soundButtonPosition.x, soundButtonPosition.y, soundButtonBounds.width, soundButtonBounds.height);
 
         batch.end();
     }
@@ -92,9 +113,15 @@ public class GameControls {
         if (screenX >= 1140 && screenX <= 1234 && invertedY >= 20 && invertedY <= 90) {
             if (listener != null) listener.onShowInstructions();
         }
+
+        if (screenX >= 1022 && screenX <= 1095 && invertedY >= 20 && invertedY <= 90) {
+            if (listener != null) listener.onControlBGM();
+        }
+
         return false;
     }
 
+    // call this pag dineliver order
     public void setEarning(int earning) {
         if (earning < goal) {
             this.earning = earning;
@@ -105,9 +132,16 @@ public class GameControls {
         }
     }
 
+    public void setMute(boolean mute) {
+        this.mute = mute;
+    }
+
     public void dispose() {
         font.dispose();
         leaveButtonTexture.dispose();
         helpButtonTexture.dispose();
+        pauseButtonTexture.dispose();
+        soundOnButtonTexture.dispose();
+        soundOffButtonTexture.dispose();
     }
 }

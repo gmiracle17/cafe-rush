@@ -37,9 +37,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private boolean isInstructionsActive = false;
 
     private Music bgm;
+    private boolean mute = false;
 
     private static final float VIRTUAL_WIDTH = 1000;
-    private static final float VIRTUAL_HEIGHT = 720;
+    private static final float VIRTUAL_HEIGHT = 750;
     private static final float CHARACTER_SPEED = 200f;
     private static final float UNIT_SCALE = 4f;
     private static final float CHARACTER_HITBOX_REDUCTION = 0.5f;
@@ -135,7 +136,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
         bgm.setLooping(true);
-        bgm.setVolume(0.2f);
+        if (!mute) bgm.setVolume(0.2f);
         bgm.play();
 
         // Game Menu
@@ -167,6 +168,18 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             @Override
             public void onShowInstructions() {
                 isInstructionsActive = true;
+            }
+            @Override
+            public void onControlBGM() {
+                mute = !mute; // Toggle state
+
+                if (mute) {
+                    bgm.setVolume(0f);
+                } else {
+                    bgm.setVolume(0.2f);
+                }
+
+                gameControls.setMute(mute);
             }
         });
     }
