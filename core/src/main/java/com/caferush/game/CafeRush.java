@@ -82,7 +82,7 @@ public class CafeRush extends Game implements InputProcessor {
     public void create() {
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
+        viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT+75, camera);
         viewport.apply();
 
         // Load and set up map
@@ -91,7 +91,7 @@ public class CafeRush extends Game implements InputProcessor {
 
         // Set up camera position based on map dimensions
         int mapWidth = tiledMap.getProperties().get("width", Integer.class);
-        int mapHeight = tiledMap.getProperties().get("height", Integer.class);
+        int mapHeight = tiledMap.getProperties().get("height", Integer.class)-1;
         int tileWidth = tiledMap.getProperties().get("tilewidth", Integer.class);
         int tileHeight = tiledMap.getProperties().get("tileheight", Integer.class);
 
@@ -610,6 +610,10 @@ public class CafeRush extends Game implements InputProcessor {
                 );
                 return true;
             }
+            if (orderHandling != null) {
+                orderHandling.renderOrders(batch, UNIT_SCALE);
+            }
+            batch.end();
         }
         return false;
     }
