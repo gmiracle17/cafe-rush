@@ -114,14 +114,24 @@ public class OrderHandling {
                 float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
                 float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
 
-
                 Texture bubbleToDraw;
-                if (customer != null && customer.maxPatienceTime > 0) {
-                    synchronized(customer) {
-
-                        if (customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime < 0.30f) {
+                if (customer != null) {
+                    if (!customer.isSeated) {
+                        // Use spawn timer for unseated customers
+                        float patienceRatio = customer.remainingWaitingforSeatTime / customer.maxWaitingforSeatTime;
+                        if (patienceRatio < 0.30f) {
                             bubbleToDraw = speechBubbleMinimal;
-                        } else if (customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime < 0.50f) {
+                        } else if (patienceRatio < 0.50f) {
+                            bubbleToDraw = speechBubbleModerate;
+                        } else {
+                            bubbleToDraw = orderBubble;
+                        }
+                    } else {
+                        // Use order timer for seated customers
+                        float patienceRatio = customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime;
+                        if (patienceRatio < 0.30f) {
+                            bubbleToDraw = speechBubbleMinimal;
+                        } else if (patienceRatio < 0.50f) {
                             bubbleToDraw = speechBubbleModerate;
                         } else {
                             bubbleToDraw = orderBubble;
@@ -135,6 +145,7 @@ public class OrderHandling {
                 batch.draw(bubbleToDraw, bubbleX, bubbleY, scaledWidth, scaledHeight);
 
                 // Draw the menu item icon inside the bubble
+                batch.setColor(1, 1, 1, 1); // Reset color to white
                 batch.draw(icon,
                         bubbleX + (scaledWidth - iconWidth)/2f,
                         bubbleY + (scaledHeight - iconHeight)/2f + 9f,
@@ -156,6 +167,42 @@ public class OrderHandling {
         }
     }
 
+    // Get the order for a specific customer
+    public String getOrderForCustomer(Customer customer) {
+        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
+            if (entry.value.customer == customer) {
+                int menuIndex = entry.value.menuItemIndex;
+                switch(menuIndex) {
+                    case 0: return "hot_choco";
+                    case 1: return "espresso";
+                    case 2: return "americano";
+                    case 3: return "bread";
+                    case 4: return "croissant";
+                    case 5: return "donut";
+                    case 6: return "shortcake";
+                    case 7: return "cupcake";
+                    case 8: return "crinkles";
+                    case 9: return "biscuit";
+                    default: return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    // Complete an order for a customer
+    public void completeOrder(Customer customer) {
+        OrderPosition orderToRemove = null;
+        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
+            if (entry.value.customer == customer) {
+                orderToRemove = entry.key;
+                break;
+            }
+        }
+        if (orderToRemove != null) {
+            ordersPopup.remove(orderToRemove);
+        }
+    }
 
     public void dispose() {
         orderBubble.dispose();

@@ -18,11 +18,13 @@ public class GameMenu {
     private Vector2 startButtonPosition;
     private Vector2 resumeButtonPosition;
     private Vector2 exitButtonPosition;
+    private boolean isFirstStart = true;
 
     private OrthographicCamera menuCamera;
 
     public interface MenuListener {
         void onStartGame();
+        void onResumeGame();
         void onExitGame();
     }
 
@@ -64,7 +66,10 @@ public class GameMenu {
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(startButtonTexture, startButtonPosition.x, startButtonPosition.y, startButtonBounds.width, startButtonBounds.height);
-        batch.draw(resumeButtonTexture, resumeButtonPosition.x, resumeButtonPosition.y, resumeButtonBounds.width, resumeButtonBounds.height);
+        // Only show resume button if not first start
+        if (!isFirstStart) {
+            batch.draw(resumeButtonTexture, resumeButtonPosition.x, resumeButtonPosition.y, resumeButtonBounds.width, resumeButtonBounds.height);
+        }
         batch.draw(exitButtonTexture, exitButtonPosition.x, exitButtonPosition.y, exitButtonBounds.width, exitButtonBounds.height);
         batch.end();
     }
@@ -81,7 +86,17 @@ public class GameMenu {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
         if (startButtonBounds.contains(screenX, invertedY)) {
-            if (listener != null) listener.onStartGame();
+            if (listener != null) {
+                listener.onStartGame();
+                isFirstStart = false;
+            }
+            return true;
+        }
+
+        if (!isFirstStart && resumeButtonBounds.contains(screenX, invertedY)) {
+            if (listener != null) {
+                listener.onResumeGame();
+            }
             return true;
         }
 

@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import java.util.ArrayList;
+import com.badlogic.gdx.utils.ObjectMap;
 
 
 /**
@@ -35,6 +36,8 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private Instructions instructions;
     private boolean isMenuActive = true;
     private boolean isInstructionsActive = false;
+    private boolean isPaused = false;
+    private boolean isFirstStart = true;
 
     private Music bgm;
     private boolean mute = false;
@@ -50,6 +53,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private OrderHandling orderHandling;
     private CustomerHandler customerHandler;
+    private Inventory inventory;
+    // Position inventory in the middle bottom of the screen
+    private static final float INVENTORY_X = VIRTUAL_WIDTH / 2 - (32 * 8 * 1.5f) / 2; // Center horizontally (considering 8 slots)
+    private static final float INVENTORY_Y = 20; 
+    private static final float INVENTORY_SCALE = 1.5f;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -81,12 +89,22 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private Machines.Machine[] machinesList;
 
+    private ObjectMap<Integer, CustomerHandler.Customer> occupiedSeats = new ObjectMap<>();
 
     @Override
     public void create() {
+        initializeGame();
+        occupiedSeats = new ObjectMap<>();
+    }
 
-        camera = new OrthographicCamera();
-        viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT + 75, camera);
+    private void initializeGame() {
+        // Create new camera and viewport if they don't exist
+        if (camera == null) {
+            camera = new OrthographicCamera();
+        }
+        if (viewport == null) {
+            viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT + 75, camera);
+        }
         viewport.apply();
 
         // Load and set up map
@@ -120,6 +138,13 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         characterPosition = new Vector2(757, 512);
         stateTime = 0f;
 
+        // Initialize machines
+        CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1, 6, 10, 6, 11);
+        CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2, 7, 10, 7, 11);
+        CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3, 8, 10, 8, 11);
+        Pastry1 = new Machines.PastryMaker("Pastry1", 7, 9);
+        Oven1 = new Machines.Oven("Oven1", 1, new int[]{15, 16, 27, 28}, 12, 11);
+        Oven2 = new Machines.Oven("Oven2", 2, new int[]{17, 18, 29, 30}, 14, 11);
         machinesList = new Machines.Machine[]{CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2};
 
         // For collision detection
@@ -127,60 +152,107 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         characterWidth = frame.getRegionWidth() * CHARACTER_SCALE;
         characterHeight = frame.getRegionHeight() * CHARACTER_SCALE;
 
+        // Initialize game systems
         orderHandling = new OrderHandling();
+        inventory = new Inventory(orderHandling, tiledMap, "Inventory");
+        Machines.setInventory(inventory);
         customerHandler = new CustomerHandler(orderHandling);
         customerHandler.addCustomer(800, 210);
 
-        batch = new SpriteBatch();
-        Gdx.input.setInputProcessor(this);
+        // Create SpriteBatch if it doesn't exist
+        if (batch == null) {
+            batch = new SpriteBatch();
+        }
 
-        bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
-        bgm.setLooping(true);
-        if (!mute) bgm.setVolume(0.2f);
-        bgm.play();
+        // Set input processor if not set
+        if (Gdx.input.getInputProcessor() == null) {
+            Gdx.input.setInputProcessor(this);
+        }
 
-        // Game Menu
-        gameMenu = new GameMenu(new GameMenu.MenuListener() {
-            @Override
-            public void onStartGame() {
-                isMenuActive = false; // Switch to game
-            }
-            @Override
-            public void onExitGame() {
-                Gdx.app.exit(); // Exit the application
-            }
-        });
+        // Initialize or update BGM
+        if (bgm == null) {
+            bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
+            bgm.setLooping(true);
+            if (!mute) bgm.setVolume(0.2f);
+            bgm.play();
+        }
 
-        instructions = new Instructions(new Instructions.InstructionListener() {
-            @Override
-            public void onBackToGame() {
-                isInstructionsActive = false;
-            }
-        });
-
-        // Initialize GameControls with listener
-        gameControls = new GameControls(new GameControls.ControlsListener() {
-            @Override
-            public void onLeaveGame() {
-                isMenuActive = true;
-            }
-            @Override
-            public void onShowInstructions() {
-                isInstructionsActive = true;
-            }
-            @Override
-            public void onControlBGM() {
-                mute = !mute; // Toggle state
-
-                if (mute) {
-                    bgm.setVolume(0f);
-                } else {
-                    bgm.setVolume(0.2f);
+        // Initialize UI components if they don't exist
+        if (gameMenu == null) {
+            gameMenu = new GameMenu(new GameMenu.MenuListener() {
+                @Override
+                public void onStartGame() {
+                    if (!isFirstStart) {
+                        // Dispose current game resources
+                        disposeGameResources();
+                        // Reinitialize game
+                        initializeGame();
+                    }
+                    isMenuActive = false;
+                    isPaused = false;
+                    isFirstStart = false;
                 }
 
-                gameControls.setMute(mute);
-            }
-        });
+                @Override
+                public void onResumeGame() {
+                    isMenuActive = false;
+                    isPaused = false;
+                    // Resume all machines
+                    for (Machines.Machine machine : machinesList) {
+                        machine.resumeProcess();
+                    }
+                }
+
+                @Override
+                public void onExitGame() {
+                    Gdx.app.exit();
+                }
+            });
+        }
+
+        if (instructions == null) {
+            instructions = new Instructions(new Instructions.InstructionListener() {
+                @Override
+                public void onBackToGame() {
+                    isInstructionsActive = false;
+                }
+            });
+        }
+
+        if (gameControls == null) {
+            gameControls = new GameControls(new GameControls.ControlsListener() {
+                @Override
+                public void onLeaveGame() {
+                    isMenuActive = true;
+                    isPaused = true;
+                }
+                @Override
+                public void onShowInstructions() {
+                    isInstructionsActive = true;
+                }
+                @Override
+                public void onControlBGM() {
+                    mute = !mute;
+                    if (mute) {
+                        bgm.setVolume(0f);
+                    } else {
+                        bgm.setVolume(0.2f);
+                    }
+                    gameControls.setMute(mute);
+                }
+            });
+        }
+    }
+
+    private void disposeGameResources() {
+        if (tiledMap != null) tiledMap.dispose();
+        if (tiledMapRenderer != null) ((OrthogonalTiledMapRenderer) tiledMapRenderer).dispose();
+        if (frontTexture != null) frontTexture.dispose();
+        if (backTexture != null) backTexture.dispose();
+        if (sideTexture != null) sideTexture.dispose();
+        if (customerHandler != null) customerHandler.dispose();
+        if (inventory != null) inventory.dispose();
+        // Don't dispose batch here as it's needed for menu rendering
     }
 
     @Override
@@ -188,7 +260,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (isMenuActive) {
             // Render the game menu
             gameMenu.render(batch);
-            return; // Skip the rest of the render method
+            return;
         }
 
         if (isInstructionsActive) {
@@ -196,7 +268,21 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return;
         }
 
+        if (isPaused) {
+            return;
+        }
+
         float delta = Gdx.graphics.getDeltaTime();
+        
+        // Update customer states and handle lost patience
+        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+            if (customer.hasLostPatience()) {
+                // Clear the occupied seat if customer was seated
+                if (customer.currentSeatId != -1) {
+                    occupiedSeats.remove(customer.currentSeatId);
+                }
+            }
+        }
         customerHandler.update(delta);
 
         Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
@@ -248,11 +334,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // render the seats (object layer)
+        // Always render ALL seats first
         MapLayer seatLayer = tiledMap.getLayers().get("Seats");
         if (seatLayer != null) {
             for (MapObject obj : seatLayer.getObjects()) {
-                if (obj instanceof TiledMapTileMapObject){
+                if (obj instanceof TiledMapTileMapObject) {
                     TiledMapTileMapObject seatObj = (TiledMapTileMapObject) obj;
                     batch.draw(seatObj.getTextureRegion(),
                             seatObj.getX() * UNIT_SCALE,
@@ -263,10 +349,12 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             }
         }
 
+        // Draw character
         batch.draw(currentFrame, characterPosition.x, characterPosition.y,
             currentFrame.getRegionWidth() * CHARACTER_SCALE,
             currentFrame.getRegionHeight() * CHARACTER_SCALE);
 
+        // Draw customers
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (customer.sprite != null) {
                 batch.draw(
@@ -284,6 +372,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
 
         customerHandler.renderSpawnPatience(batch, delta);
+
+        // Render inventory items
+        if (inventory != null) {
+            inventory.render(batch);
+        }
         
         batch.end();
 
@@ -293,6 +386,19 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Update and render game controls
         gameControls.render(batch);
+
+        // Handle inventory drag and drop
+        if (Gdx.input.isTouched()) {
+            Vector3 touchPos = new Vector3();
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            inventory.handleInput(touchPos.x, touchPos.y, true, tiledMap);
+        } else {
+            Vector3 touchPos = new Vector3();
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+            inventory.handleInput(touchPos.x, touchPos.y, false, tiledMap);
+        }
     }
 
 
@@ -452,13 +558,8 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void dispose() {
-        if (tiledMap != null) tiledMap.dispose();
-        if (tiledMapRenderer != null) ((OrthogonalTiledMapRenderer) tiledMapRenderer).dispose();
-        if (frontTexture != null) frontTexture.dispose();
-        if (backTexture != null) backTexture.dispose();
-        if (sideTexture != null) sideTexture.dispose();
+        disposeGameResources();
         if (batch != null) batch.dispose();
-        if (customerHandler != null) customerHandler.dispose();
         if (bgm != null) {
             bgm.stop();
             bgm.dispose();
@@ -470,6 +571,26 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
+        // Escape key to toggle menu and pause
+        if (keycode == Input.Keys.ESCAPE) {
+            isMenuActive = !isMenuActive;
+            isPaused = isMenuActive;
+            
+            // Pause/resume all machines
+            for (Machines.Machine machine : machinesList) {
+                if (isPaused) {
+                    machine.pauseProcess();
+                } else {
+                    machine.resumeProcess();
+                }
+            }
+            return true;
+        }
+
+        if (isPaused) {
+            return false;
+        }
+
         // for game menu
         if (isMenuActive && keycode == Input.Keys.ENTER) {
             isMenuActive = false; // Switch to game mode
@@ -482,12 +603,109 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return true;
         }
 
+        // 'E' key to collect orders and serve customers
+        if (keycode == Input.Keys.E) {
+            // First try to collect any completed orders
+            if (collectNearbyOrder()) {
+                return true;
+            }
+            // If no orders to collect, try to serve customers
+            serveNearbyCustomers();
+            return true;
+        }
+
         if (keycode == Input.Keys.NUM_1)
             tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
         if (keycode == Input.Keys.NUM_2)
             tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
 
         return false;
+    }
+
+    // method to collect nearby orders
+    private boolean collectNearbyOrder() {
+        float tileSize = 16 * UNIT_SCALE;
+        int characterTileX = (int)(characterPosition.x / tileSize);
+        int characterTileY = (int)(characterPosition.y / tileSize);
+        int radius = 2; // Same radius as machine interaction
+
+        for (Machines.Machine machine : machinesList) {
+            if (machine.orderReady) {
+                // Check if player is within radius of machine tiles
+                String machineType = machine.machineType;
+                for (int y = characterTileY - radius; y <= characterTileY + radius; y++) {
+                    for (int x = characterTileX - radius; x <= characterTileX + radius; x++) {
+                        String foundType = Machines.checkMachineTypeAtExact(tiledMap, x, y);
+                        if (foundType != null && foundType.equals(machineType)) {
+                            // Try to collect the order
+                            if (inventory.addOrder(machine.choice)) {
+                                // Clear the machine's display
+                                TiledMapTileLayer displayLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayLayer);
+                                if (displayLayer != null && displayLayer.getCell(machine.displayX, machine.displayY) != null) {
+                                    displayLayer.getCell(machine.displayX, machine.displayY).setTile(null);
+                                }
+
+                                // Hide the status boxes
+                                String[] colors = {" Green ", " Yellow ", " Red "};
+                                for (String color : colors) {
+                                    TiledMapTileLayer boxLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayBoxLayer + color + machine.machineId);
+                                    if (boxLayer != null) {
+                                        boxLayer.setVisible(false);
+                                    }
+                                }
+
+                                machine.orderReady = false;
+                                machine.isBusy = false;
+                                System.out.println("Order collected from " + machine.name);
+                                return true;
+                            } else {
+                                System.out.println("Inventory is full!");
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void serveNearbyCustomers() {
+        float tileSize = 16 * UNIT_SCALE;
+        float interactionRange = tileSize * 2; // 2 tiles range for serving
+
+        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+            if (!customer.isSeated) continue;
+
+            // Calculate distance between player and customer
+            float distanceX = Math.abs(characterPosition.x - customer.position.x);
+            float distanceY = Math.abs(characterPosition.y - customer.position.y);
+
+            if (distanceX <= interactionRange && distanceY <= interactionRange) {
+                // Get customer's order from OrderHandling
+                String customerOrder = orderHandling.getOrderForCustomer(customer);
+                if (customerOrder != null) {
+                    // Try to serve the order from inventory
+                    if (inventory.serveOrder(customerOrder)) {
+                        // Order successfully served
+                        orderHandling.completeOrder(customer);
+                        
+                        // Free up the seat
+                        if (customer.currentSeatId != -1) {
+                            occupiedSeats.remove(customer.currentSeatId);
+                        }
+                        
+                        // Remove the served customer completely
+                        customerHandler.removeCustomer(customer);
+                        
+                        // Enable random spawning of new customer
+                        customerHandler.customerServed();
+                        
+                        System.out.println("Successfully served customer!");
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -501,10 +719,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return false;
     }
 
-      private void handleOptionClick(int tileX, int tileY) {
+    private void handleOptionClick(int tileX, int tileY, Machines.Machine[] machines, TiledMap tiledMap) {
         boolean processed = false;
 
-        for (Machines.Machine machine : machinesList) {
+        // Handle normal machine interaction
+        for (Machines.Machine machine : machines) {
             if (machine.isBusy) {
                 System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
                 continue;
@@ -535,13 +754,12 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             }
         }
 
-        // Optional: If no machine was available to process the order, you can handle it here
         if (!processed) {
             System.out.println("No available machine to process the order.");
         }
     }
 
-     @Override
+    @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(clickedPosition);
@@ -549,12 +767,19 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (customer.beingDragged) {
                 customer.beingDragged = false;
+                boolean wasSeated = false;
 
                 MapLayer seatLayer = tiledMap.getLayers().get("Seats");
                 if (seatLayer != null) {
                     for (MapObject obj : seatLayer.getObjects()) {
                         if (obj instanceof TiledMapTileMapObject) {
                             TiledMapTileMapObject seat = (TiledMapTileMapObject) obj;
+                            int seatId = seat.getProperties().get("Seat", -1, Integer.class);
+
+                            // Skip if seat is occupied
+                            if (occupiedSeats.containsKey(seatId)) {
+                                continue;
+                            }
 
                             // Calculate seat center and bounds
                             float seatCenterX = seat.getX() * UNIT_SCALE + (seat.getTextureRegion().getRegionWidth() * UNIT_SCALE)/2;
@@ -569,18 +794,30 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                                     seatCenterX - 30,
                                     seatCenterY
                                 );
-                                customer.isSeated = true;
-
+                                
+                                // Reset customer state and properly seat them
+                                customer.stopAllTimers();
+                                customerHandler.seatCustomer(customer);
+                                
+                                // Mark seat as occupied
+                                occupiedSeats.put(seatId, customer);
+                                customer.currentSeatId = seatId;
+                                
                                 int randomOrder = MathUtils.random(orderHandling.getMenuItems().length - 1);
                                 orderHandling.addOrder(seat, randomOrder, customer);
 
-                                return true;
+                                wasSeated = true;
+                                break;
                             }
                         }
                     }
                 }
+
                 // Return to spawn if no seat found
-                customer.position.set(800, 210);
+                if (!wasSeated) {
+                    customer.position.set(800, 210);
+                    // Don't reset timers if returning to spawn without being seated
+                }
                 return true;
             }
         }
@@ -613,7 +850,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         camera.unproject(clickedPosition);
         Vector2 worldPosition = new Vector2(clickedPosition.x, clickedPosition.y);
 
-        // 1. Check if any customer was clicked
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (!customer.isSeated && customerClicked(customer, worldPosition)) {
                 customer.beingDragged = true;
@@ -628,7 +864,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         Vector2 worldCoords = viewport.unproject(new Vector2(screenX, screenY));
         int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
         int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
-        handleOptionClick(tileX, tileY);
+        handleOptionClick(tileX, tileY, machinesList, tiledMap);
 
         return true;
     }

@@ -9,14 +9,21 @@ import com.badlogic.gdx.audio.Sound;
 public class Machines {
 
     static Sound ding = Gdx.audio.newSound(Gdx.files.internal("sounds/ding-101492.mp3"));
+    private static Inventory inventory;
+
+    public static void setInventory(Inventory inv) {
+        inventory = inv;
+    }
 
     public static abstract class Machine extends Thread {
         protected volatile boolean isBusy = false;
         protected String choice;
         protected final String name;
         protected long processTime;
+        protected volatile boolean orderReady = false;
+        protected volatile boolean isPaused = false;
+        protected volatile long remainingTime = 0;
 
-        /* Properties of Machine in Tiled Map */
         protected String machineLayer;
         protected String machineType;
         protected String optionsLayer;
@@ -72,6 +79,7 @@ public class Machines {
             }
 
             this.choice = optionCell.getTile().getProperties().get("order", String.class);
+            System.out.println("Machine " + name + " starting process with order: " + this.choice);
             this.isBusy = true;
             this.map = map;
 
@@ -91,30 +99,101 @@ public class Machines {
         private void runProcess() {
             try {
                 setStatusColor(map, this, " Red ");
-                Thread.sleep(processTime / 2);
+                long startTime = System.currentTimeMillis();
+                long halfTime = processTime / 2;
+                remainingTime = processTime;
+
+                // First half
+                while (remainingTime > halfTime) {
+                    if (!isPaused) {
+                        Thread.sleep(100); // Sleep in small intervals to check pause state
+                        remainingTime -= 100;
+                    } else {
+                        Thread.sleep(100); // Keep checking pause state
+                    }
+                }
 
                 setStatusColor(map, this, " Yellow ");
-                Thread.sleep(processTime / 2);
+
+                // Second half
+                while (remainingTime > 0) {
+                    if (!isPaused) {
+                        Thread.sleep(100);
+                        remainingTime -= 100;
+                    } else {
+                        Thread.sleep(100);
+                    }
+                }
 
                 ding.play();
                 setStatusColor(map, this, " Green ");
-                Thread.sleep(5000); // simulate user collecting
+                orderReady = true;
 
-                // Clear visuals
-                TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
-                displayLayer.getCell(displayX, displayY).setTile(null);
+                // Display time
+                long displayTime = 5000;
+                while (displayTime > 0 && orderReady) {
+                    if (!isPaused) {
+                        Thread.sleep(100);
+                        displayTime -= 100;
+                    } else {
+                        Thread.sleep(100);
+                    }
+                }
 
-                String[] colors = {" Green ", " Yellow ", " Red "};
-                for (String color : colors) {
-                    TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color + this.machineId);
-                    boxLayer.setVisible(false);
+                if (orderReady) {
+                    // Clear visuals
+                    TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
+                    displayLayer.getCell(displayX, displayY).setTile(null);
+
+                    String[] colors = {" Green ", " Yellow ", " Red "};
+                    for (String color : colors) {
+                        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color + this.machineId);
+                        boxLayer.setVisible(false);
+                    }
                 }
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
                 this.isBusy = false;
+                this.orderReady = false;
             }
+        }
+
+        public void pauseProcess() {
+            isPaused = true;
+        }
+
+        public void resumeProcess() {
+            isPaused = false;
+        }
+
+        public boolean collectOrder(int tileX, int tileY) {
+            if (!orderReady || !isBusy) return false;
+
+            // Check if click is within the display area (with a slightly larger detection area)
+            if (Math.abs(tileX - displayX) <= 1 && Math.abs(tileY - displayY) <= 1) {
+                if (inventory != null) {
+                    System.out.println("Attempting to collect order: " + choice + " from " + name); // Debug print
+                    boolean added = inventory.addOrder(choice);
+                    if (added) {
+                        TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
+                        displayLayer.getCell(displayX, displayY).setTile(null);
+
+                        String[] colors = {" Green ", " Yellow ", " Red "};
+                        for (String color : colors) {
+                            TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color + this.machineId);
+                            boxLayer.setVisible(false);
+                        }
+
+                        orderReady = false;
+                        return true;
+                    } else {
+                        System.out.println("Inventory is full! Cannot collect " + choice);
+                    }
+                }
+            }
+            return false;
         }
     }
 
@@ -181,7 +260,6 @@ public class Machines {
         }
     }
 
-    /* Machine Timer Visualization */
     public static void setStatusColor(TiledMap map, Machines.Machine machine, String color) {
         TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(machine.produceDisplayBoxLayer + color + machine.machineId);
 
@@ -248,7 +326,6 @@ public class Machines {
         }
     }
 
-    /* Removes cell */
     static void clearUsedCells(TiledMapTileLayer layer) {
         int width = layer.getWidth();
         int height = layer.getHeight();
@@ -307,5 +384,46 @@ public class Machines {
         }
 
         return null;
+    }
+
+    private void handleOptionClick(int tileX, int tileY, Machine[] machinesList, TiledMap tiledMap) {
+        boolean processed = false;
+
+        // Handle normal machine interaction
+        for (Machine machine : machinesList) {
+            if (machine.isBusy) {
+                System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
+                continue;
+            }
+
+            TiledMapTileLayer optionsLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.optionsLayer);
+            if (optionsLayer == null || !optionsLayer.isVisible()) continue;
+
+            TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
+
+            if (cell != null && cell.getTile() != null) {
+                String order = cell.getTile().getProperties().get("order", String.class);
+
+                if (order != null) {
+                    boolean started = machine.startProcess(tiledMap, cell);
+
+                    if (started) {
+                        System.out.println("Started " + machine.name + " (ID: " + machine.machineId + ") with order: " + order);
+                        machine.hideOptions();
+                        processed = true;
+                        break;
+                    } else {
+                        System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy.");
+                    }
+                } else {
+                    System.out.println("No 'order' property found on the clicked tile.");
+                }
+            }
+        }
+
+        // Optional: If no machine was available to process the order, you can handle it here
+        if (!processed) {
+            System.out.println("No available machine to process the order.");
+        }
     }
 }

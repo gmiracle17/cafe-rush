@@ -26,10 +26,11 @@ public class CustomerHandler {
 
     private float minSpawnDelay = 3.0f; // minimum seconds between spawns
     private float maxSpawnDelay = 8.0f; // maximum seconds between spawns
-    private int maxCustomers = 5; // maximum customers at once
+    private int maxCustomers = 9; // maximum customers (8 seated + 1 waiting)
     private static final float SPAWN_RADIUS = 30f;
     public float spawnX = 800;
     public float spawnY = 210;
+    private volatile boolean canSpawnNewCustomer = true;
 
     static Sound meow = Gdx.audio.newSound(Gdx.files.internal("sounds/meow.mp3"));
     static Sound angrymeow = Gdx.audio.newSound(Gdx.files.internal("sounds/angry-meow.mp3"));
@@ -84,10 +85,17 @@ public class CustomerHandler {
                 customer.sprite = customerSprites.random();
             }
 
+            // Initialize patience timers and values before adding to list
+            customer.remainingPatienceTime = customer.getWaitingforSeatTime();
+            customer.maxPatienceTime = customer.getWaitingforSeatTime();
+            customer.remainingWaitingforSeatTime = customer.getWaitingforSeatTime();
+            customer.maxWaitingforSeatTime = customer.getWaitingforSeatTime();
+
             customers.add(customer);
 
             // Start spawn patience timer (not seated yet)
             customer.startWaitingforSeatTimer();
+            System.out.println("New customer spawned with patience time: " + customer.remainingPatienceTime);
         }
     }
 
@@ -96,8 +104,19 @@ public class CustomerHandler {
             customer.stopAllTimers();
             customers.removeValue(customer, true);
 
+            // Clear the occupied seat if customer was seated
+            if (customer.currentSeatId != -1) {
+
+                customer.currentSeatId = -1;
+            }
+
             if (orderHandling != null) {
                 orderHandling.removeOrderByCustomer(customer);
+            }
+
+            // Enable spawning when a customer is removed
+            if (customers.size < maxCustomers) {
+                canSpawnNewCustomer = true;
             }
         }
     }
@@ -133,7 +152,8 @@ public class CustomerHandler {
     public void renderSpawnPatience(SpriteBatch batch, float UNIT_SCALE) {
         synchronized(customersLock) {
             for (Customer customer : customers) {
-                if (!customer.isSeated && customer.isInSpawnPhase()) {
+                // Show bubble for any customer not seated (whether in spawn or being dragged)
+                if (!customer.isSeated) {
                     renderCustomerSpawnBubble(batch, customer, UNIT_SCALE);
                 }
             }
@@ -191,17 +211,25 @@ public class CustomerHandler {
                     float delay = MathUtils.random(minSpawnDelay, maxSpawnDelay);
                     Thread.sleep((long)(delay * 1000));
 
-                    // Check if we should spawn a new customer
-                    boolean shouldSpawn = false;
                     synchronized(customersLock) {
-                        shouldSpawn = (customers.size < maxCustomers && isRunning);
-                    }
-
-                    float spawnX = 800;
-                    float spawnY = 210;
-
-                    if (shouldSpawn && isSpawnPointClear(spawnX, spawnY)) {
-                        addCustomer(spawnX, spawnY);
+                        // Only spawn if:
+                        // 1. Below max customers
+                        // 2. Spawn point is clear
+                        // 3. We're allowed to spawn new customers
+                        if (customers.size < maxCustomers && 
+                            isSpawnPointClear(spawnX, spawnY) && 
+                            canSpawnNewCustomer && 
+                            isRunning) {
+                            
+                            addCustomer(spawnX, spawnY);
+                            System.out.println("Spawned new customer. Total customers: " + customers.size);
+                            
+                            // If we've reached max customers, stop spawning until a customer is served
+                            if (customers.size >= maxCustomers) {
+                                canSpawnNewCustomer = false;
+                                System.out.println("Reached max customers, pausing spawns");
+                            }
+                        }
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -271,6 +299,7 @@ public class CustomerHandler {
         public TextureRegion sprite;
         public boolean beingDragged;
         public boolean isSeated;
+        public int currentSeatId = -1; // Track which seat the customer is occupying
 
         public float maxPatienceTime;
         public float remainingPatienceTime;
@@ -283,8 +312,8 @@ public class CustomerHandler {
 
 
         // Patience system with separate timers
-        private float patienceAtSpawn = 30f;   // waits 30 seconds at spawn point
-        private float patienceAtSeat = 60f;    // waits 60 seconds after seated
+        private float patienceAtSpawn;   // waits 30 seconds at spawn point
+        private float patienceAtSeat;    // waits 60 seconds after seated
         private CustomerPatienceTimer spawnPatienceTimer;
         private CustomerPatienceTimer seatedPatienceTimer;
         private volatile boolean hasLostPatience = false;
@@ -292,19 +321,27 @@ public class CustomerHandler {
         public Customer() {
             this.isSeated = false;
             this.beingDragged = false;
+            this.hasLostPatience = false;
+            // Initialize patience values
+            this.patienceAtSpawn = 30f;   // waits 30 seconds at spawn point
+            this.patienceAtSeat = 60f;    // waits 60 seconds after seated
+            this.remainingPatienceTime = patienceAtSpawn;
+            this.maxPatienceTime = patienceAtSpawn;
+            this.remainingWaitingforSeatTime = patienceAtSpawn;
+            this.maxWaitingforSeatTime = patienceAtSpawn;
         }
 
         public void startWaitingforSeatTimer() {
             if (spawnPatienceTimer == null) {
+                // Make sure patience values are properly set
                 this.remainingPatienceTime = patienceAtSpawn;
                 this.maxPatienceTime = patienceAtSpawn;
-
-
                 this.remainingWaitingforSeatTime = patienceAtSpawn;
                 this.maxWaitingforSeatTime = patienceAtSpawn;
 
                 spawnPatienceTimer = new CustomerPatienceTimer(this, patienceAtSpawn, "spawn");
                 spawnPatienceTimer.start();
+                System.out.println("Started spawn timer with patience: " + remainingPatienceTime);
             }
         }
 
@@ -417,5 +454,11 @@ public class CustomerHandler {
         if (spawnBubbleNormal != null) spawnBubbleNormal.dispose();
         if (spawnBubbleModerate != null) spawnBubbleModerate.dispose();
         if (spawnBubbleMinimal != null) spawnBubbleMinimal.dispose();
+    }
+
+    public void customerServed() {
+        // Allow spawning of new customers when one is served
+        canSpawnNewCustomer = true;
+        System.out.println("Customer served, enabling new spawns");
     }
 }
