@@ -129,26 +129,12 @@ public class Machines {
                 setStatusColor(map, this, " Green ");
                 orderReady = true;
 
-                // Display time
-                long displayTime = 5000;
-                while (displayTime > 0 && orderReady) {
+                // Keep the order displayed until collected
+                while (orderReady) {
                     if (!isPaused) {
                         Thread.sleep(100);
-                        displayTime -= 100;
                     } else {
                         Thread.sleep(100);
-                    }
-                }
-
-                if (orderReady) {
-                    // Clear visuals
-                    TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
-                    displayLayer.getCell(displayX, displayY).setTile(null);
-
-                    String[] colors = {" Green ", " Yellow ", " Red "};
-                    for (String color : colors) {
-                        TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color + this.machineId);
-                        boxLayer.setVisible(false);
                     }
                 }
 
@@ -156,7 +142,7 @@ public class Machines {
                 e.printStackTrace();
             } finally {
                 this.isBusy = false;
-                this.orderReady = false;
+                // Don't set orderReady to false here, it should only be set to false when collected
             }
         }
 

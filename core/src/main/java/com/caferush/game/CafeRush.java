@@ -98,6 +98,13 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     }
 
     private void initializeGame() {
+        // Clear occupied seats map
+        if (occupiedSeats == null) {
+            occupiedSeats = new ObjectMap<>();
+        } else {
+            occupiedSeats.clear();
+        }
+
         // Create new camera and viewport if they don't exist
         if (camera == null) {
             camera = new OrthographicCamera();
@@ -245,13 +252,25 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     }
 
     private void disposeGameResources() {
+        // Dispose of all game resources
         if (tiledMap != null) tiledMap.dispose();
         if (tiledMapRenderer != null) ((OrthogonalTiledMapRenderer) tiledMapRenderer).dispose();
         if (frontTexture != null) frontTexture.dispose();
         if (backTexture != null) backTexture.dispose();
         if (sideTexture != null) sideTexture.dispose();
-        if (customerHandler != null) customerHandler.dispose();
-        if (inventory != null) inventory.dispose();
+        if (customerHandler != null) {
+            customerHandler.dispose();
+        }
+        if (orderHandling != null) {
+            orderHandling.dispose();
+        }
+        if (inventory != null) {
+            inventory.dispose();
+        }
+        // Clear occupied seats
+        if (occupiedSeats != null) {
+            occupiedSeats.clear();
+        }
         // Don't dispose batch here as it's needed for menu rendering
     }
 
