@@ -1,6 +1,7 @@
 package com.caferush.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,14 +37,18 @@ public class Instructions {
         instructionsTexture = new Texture(Gdx.files.internal("instructions.png"));
         resumeButtonTexture = new Texture(Gdx.files.internal("buttons/resume.png"));
 
-        // Position buttons centered horizontally, with some vertical spacing
+        // Position buttons centered horizontally at the bottom
         int buttonWidth = 400;
         int buttonHeight = 100;
-        resumeButtonPosition = new Vector2((screenWidth - buttonWidth) / 2f, screenHeight / 2f - 390);
+        resumeButtonPosition = new Vector2((screenWidth - buttonWidth) / 2f, 20f);
         resumeButtonBounds = new Rectangle(resumeButtonPosition.x, resumeButtonPosition.y, buttonWidth, buttonHeight);
     }
 
     public void render(SpriteBatch batch) {
+        // Clear the screen
+        Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         // Use the menu's own camera
         batch.setProjectionMatrix(instructionsCamera.combined);
 

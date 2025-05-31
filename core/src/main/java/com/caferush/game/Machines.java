@@ -8,8 +8,14 @@ import com.badlogic.gdx.audio.Sound;
 
 public class Machines {
 
-    static Sound ding = Gdx.audio.newSound(Gdx.files.internal("sfx/ding-101492.mp3"));
+    private static Sound ding;
     private static Inventory inventory;
+
+    public static void initializeSounds() {
+        if (ding == null) {
+            ding = Gdx.audio.newSound(Gdx.files.internal("sfx/ding-101492.mp3"));
+        }
+    }
 
     public static void setInventory(Inventory inv) {
         inventory = inv;
@@ -123,7 +129,10 @@ public class Machines {
                     }
                 }
 
-                ding.play();
+                if (ding != null) {
+                    long soundId = ding.play();
+                    ding.setVolume(soundId, 0.5f);
+                }
                 setStatusColor(map, this, " Green ");
                 orderReady = true;
 
@@ -137,7 +146,7 @@ public class Machines {
                 }
 
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             } finally {
                 this.isBusy = false;
                 // Don't set orderReady to false here, it should only be set to false when collected
@@ -245,8 +254,6 @@ public class Machines {
         }
     }
 
-
-    /* Shows hovered tile among options */
     public static void handleOptionsHover(TiledMap map, int tileX, int tileY, Machines.Machine[] machines) {
         boolean hoverLayerShown = false;
 
@@ -307,7 +314,6 @@ public class Machines {
         }
     }
 
-    /* Hides options after transferring to another machine or walking away far from machine */
     public static void hideAllOptions(TiledMap map, Machines.Machine[] machines) {
         for (Machines.Machine machine : machines) {
             MapLayer optionsLayer = map.getLayers().get(machine.optionsLayer);

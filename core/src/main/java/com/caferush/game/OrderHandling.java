@@ -56,7 +56,7 @@ public class OrderHandling {
 
     private void loadSpeechBubbleTextures() {
         speechBubbleModerate = new Texture("pngs/speech-bubble-moderatepatience.png");
-        speechBubbleMinimal = new Texture("pngs/speech-bubble-minimalpatience.png"); // Fixed typo
+        speechBubbleMinimal = new Texture("pngs/speech-bubble-minimalpatience.png");
     }
 
     public void addOrder(TiledMapTileMapObject seat, int menuItemIndex, Customer customer) {
@@ -94,68 +94,60 @@ public class OrderHandling {
     }
 
     public void renderOrders(SpriteBatch batch, float unitScale) {
-        if (!batch.isDrawing()) {
-            batch.begin();
-        }
+        float bubbleScale = 1.5f;
+        float iconScale = 2.0f;
+        float scaledWidth = orderBubble.getWidth() * bubbleScale;
+        float scaledHeight = orderBubble.getHeight() * bubbleScale;
 
-        try {
-            float bubbleScale = 1.5f;
-            float iconScale = 2.0f;
-            float scaledWidth = orderBubble.getWidth() * bubbleScale;
-            float scaledHeight = orderBubble.getHeight() * bubbleScale;
+        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
+            OrderPosition seatPos = entry.key;
+            OrderInfo orderInfo = entry.value;
+            Customer customer = orderInfo.customer;
+            TextureRegion icon = orderImage[orderInfo.menuItemIndex];
 
-            for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
-                OrderPosition seatPos = entry.key;
-                OrderInfo orderInfo = entry.value;
-                Customer customer = orderInfo.customer;
-                TextureRegion icon = orderImage[orderInfo.menuItemIndex];
+            float iconWidth = icon.getRegionWidth() * iconScale;
+            float iconHeight = icon.getRegionHeight() * iconScale;
 
-                float iconWidth = icon.getRegionWidth() * iconScale;
-                float iconHeight = icon.getRegionHeight() * iconScale;
+            float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
+            float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
 
-                float bubbleX = (seatPos.seatX + seatPos.orderX) * unitScale;
-                float bubbleY = (seatPos.seatY + seatPos.orderY) * unitScale;
-
-                Texture bubbleToDraw;
-                if (customer != null) {
-                    if (!customer.isSeated) {
-                        // Use spawn timer for unseated customers
-                        float patienceRatio = customer.remainingWaitingforSeatTime / customer.maxWaitingforSeatTime;
-                        if (patienceRatio < 0.30f) {
-                            bubbleToDraw = speechBubbleMinimal;
-                        } else if (patienceRatio < 0.50f) {
-                            bubbleToDraw = speechBubbleModerate;
-                        } else {
-                            bubbleToDraw = orderBubble;
-                        }
+            Texture bubbleToDraw;
+            if (customer != null) {
+                if (!customer.isSeated) {
+                    // Use spawn timer for unseated customers
+                    float patienceRatio = customer.remainingWaitingforSeatTime / customer.maxWaitingforSeatTime;
+                    if (patienceRatio < 0.30f) {
+                        bubbleToDraw = speechBubbleMinimal;
+                    } else if (patienceRatio < 0.50f) {
+                        bubbleToDraw = speechBubbleModerate;
                     } else {
-                        // Use order timer for seated customers
-                        float patienceRatio = customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime;
-                        if (patienceRatio < 0.30f) {
-                            bubbleToDraw = speechBubbleMinimal;
-                        } else if (patienceRatio < 0.50f) {
-                            bubbleToDraw = speechBubbleModerate;
-                        } else {
-                            bubbleToDraw = orderBubble;
-                        }
+                        bubbleToDraw = orderBubble;
                     }
                 } else {
-                    bubbleToDraw = orderBubble;
+                    // Use order timer for seated customers
+                    float patienceRatio = customer.remainingWaitingforOrderTime / customer.maxWaitingforOrderTime;
+                    if (patienceRatio < 0.30f) {
+                        bubbleToDraw = speechBubbleMinimal;
+                    } else if (patienceRatio < 0.50f) {
+                        bubbleToDraw = speechBubbleModerate;
+                    } else {
+                        bubbleToDraw = orderBubble;
+                    }
                 }
-
-                // Draw the speech bubble
-                batch.draw(bubbleToDraw, bubbleX, bubbleY, scaledWidth, scaledHeight);
-
-                // Draw the menu item icon inside the bubble
-                batch.setColor(1, 1, 1, 1); // Reset color to white
-                batch.draw(icon,
-                        bubbleX + (scaledWidth - iconWidth)/2f,
-                        bubbleY + (scaledHeight - iconHeight)/2f + 9f,
-                        iconWidth, iconHeight
-                );
+            } else {
+                bubbleToDraw = orderBubble;
             }
-        } finally {
 
+            // Draw the speech bubble
+            batch.draw(bubbleToDraw, bubbleX, bubbleY, scaledWidth, scaledHeight);
+
+            // Draw the menu item icon inside the bubble
+            batch.setColor(1, 1, 1, 1); // Reset color to white
+            batch.draw(icon,
+                    bubbleX + (scaledWidth - iconWidth)/2f,
+                    bubbleY + (scaledHeight - iconHeight)/2f + 9f,
+                    iconWidth, iconHeight
+            );
         }
     }
 

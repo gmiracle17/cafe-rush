@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -79,10 +81,21 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private ObjectMap<Integer, CustomerHandler.Customer> occupiedSeats = new ObjectMap<>();
 
+    private int currentDay = 1;
+    private int currentEarnings = 0;
+    private int earningGoal = 300;
+    private int earningGoalIncrement = 50;
+    private float dayTimer = 90; // 3 minutes per day
+    private float currentDayTime = 180;
+    private boolean isGameOver = false;
+    private BitmapFont font;
+
     @Override
     public void create() {
         initializeGame();
         occupiedSeats = new ObjectMap<>();
+        font = new BitmapFont();
+        font.getData().setScale(1.7f);  // Increase font size
     }
 
     private void initializeGame() {
@@ -101,6 +114,9 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT + 75, camera);
         }
         viewport.apply();
+
+        // Initialize sounds
+        Machines.initializeSounds();
 
         // Load and set up map
         tiledMap = new TmxMapLoader().load("Cafe Map.tmx");
@@ -152,7 +168,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         inventory = new Inventory(orderHandling, tiledMap, "Inventory");
         Machines.setInventory(inventory);
         customerHandler = new CustomerHandler(orderHandling);
-        customerHandler.addCustomer(800, 210);
 
         // Create SpriteBatch if it doesn't exist
         if (batch == null) {
@@ -174,69 +189,23 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Initialize UI components if they don't exist
         if (gameMenu == null) {
-            gameMenu = new GameMenu(new GameMenu.MenuListener() {
-                @Override
-                public void onStartGame() {
-                    if (!isFirstStart) {
-                        // Dispose current game resources
-                        disposeGameResources();
-                        // Reinitialize game
-                        initializeGame();
-                    }
-                    isMenuActive = false;
-                    isPaused = false;
-                    isFirstStart = false;
-                }
-
-                @Override
-                public void onResumeGame() {
-                    isMenuActive = false;
-                    isPaused = false;
-                    // Resume all machines
-                    for (Machines.Machine machine : machinesList) {
-                        machine.resumeProcess();
-                    }
-                }
-
-                @Override
-                public void onExitGame() {
-                    Gdx.app.exit();
-                }
-            });
+            gameMenu = new GameMenu(createMenuListener());
         }
 
         if (instructions == null) {
-            instructions = new Instructions(new Instructions.InstructionListener() {
-                @Override
-                public void onBackToGame() {
-                    isInstructionsActive = false;
-                }
-            });
+            instructions = new Instructions(createInstructionsListener());
         }
 
         if (gameControls == null) {
-            gameControls = new GameControls(new GameControls.ControlsListener() {
-                @Override
-                public void onLeaveGame() {
-                    isMenuActive = true;
-                    isPaused = true;
-                }
-                @Override
-                public void onShowInstructions() {
-                    isInstructionsActive = true;
-                }
-                @Override
-                public void onControlBGM() {
-                    mute = !mute;
-                    if (mute) {
-                        bgm.setVolume(0f);
-                    } else {
-                        bgm.setVolume(0.2f);
-                    }
-                    gameControls.setMute(mute);
-                }
-            });
+            gameControls = new GameControls(createControlsListener());
         }
+
+        // Initialize day-related variables
+        currentDay = 1;
+        currentEarnings = 0;
+        earningGoal = 300;
+        currentDayTime = dayTimer;
+        isGameOver = false;
     }
 
     private void disposeGameResources() {
@@ -265,58 +234,63 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void render() {
+        float delta = Gdx.graphics.getDeltaTime();
+        stateTime += delta;
+
+        // Update day timer if game is running
+        if (!isMenuActive && !isInstructionsActive && !isPaused && !isGameOver) {
+            currentDayTime -= delta;
+            
+            // Check if day is over
+            if (currentDayTime <= 0) {
+                endDay();
+            }
+
+            // Check for customer timeouts
+            if (customerHandler != null) {
+                ArrayList<CustomerHandler.Customer> customersToRemove = new ArrayList<>();
+                for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+                    if (customer.isSeated && customer.remainingPatienceTime <= 0) {
+                        customersToRemove.add(customer);
+                    }
+                }
+                // Remove timed out customers
+                for (CustomerHandler.Customer customer : customersToRemove) {
+                    handleCustomerTimeout(customer);
+                }
+            }
+        }
+
+        // Clear the screen at the start of each frame
+        Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Handle menu state
         if (isMenuActive) {
-            // Render the game menu
+            batch.begin();
             gameMenu.render(batch);
+            // Only show controls if we're not in instructions and not in first start
+            if (!isInstructionsActive && !isFirstStart) {
+                gameControls.render(batch);
+            }
+            batch.end();
             return;
         }
 
+        // Handle instructions state
         if (isInstructionsActive) {
             instructions.render(batch);
             return;
         }
 
-        if (isPaused) {
-            return;
-        }
-
-        float delta = Gdx.graphics.getDeltaTime();
-
-        // Update customer states and handle lost patience
-        for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-            if (customer.hasLostPatience()) {
-                // Clear the occupied seat if customer was seated
-                if (customer.currentSeatId != -1) {
-                    occupiedSeats.remove(customer.currentSeatId);
-                }
-            }
-        }
-        customerHandler.update(delta);
-
-        Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // Handle character movement and interaction
-        boolean moved = handleCharacterInput(delta);
-
-        if (moved) {
-            Machines.hideAllOptions(tiledMap, machinesList);
-        }
-
-        checkNearbyMachines();
-
-        if (!moved) {
-            currentAnimation = walkDown;
-        }
-
-        stateTime += delta;
-        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
-
-        // Render map and character
+        // Game is running - show controls
         camera.update();
+        batch.setProjectionMatrix(camera.combined);
+        
+        // Define foreground layers
         int[] foregroundIndices = {3, 4, 13, 14, 15, 27, 31, 32, 33};
 
-        // Create an array for background layers (everything except the foreground one)
+        // Create an array for background layers
         ArrayList<Integer> backgroundLayerIndices = new ArrayList<>();
         for (int i = 0; i < tiledMap.getLayers().getCount(); i++) {
             boolean isForeground = false;
@@ -332,17 +306,14 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         // Convert to int[]
         int[] backgroundArray = backgroundLayerIndices.stream().mapToInt(Integer::intValue).toArray();
 
-        // Render background layers
+        // Render background layers first
         tiledMapRenderer.setView(camera);
-
         for (int index : backgroundArray) {
             tiledMapRenderer.render(new int[] {index});
         }
 
-        batch.setProjectionMatrix(camera.combined);
         batch.begin();
-
-        // Always render ALL seats first
+        // Render seats
         MapLayer seatLayer = tiledMap.getLayers().get("Seats");
         if (seatLayer != null) {
             for (MapObject obj : seatLayer.getObjects()) {
@@ -358,6 +329,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
 
         // Draw character
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
         batch.draw(currentFrame, characterPosition.x, characterPosition.y,
                 currentFrame.getRegionWidth() * CHARACTER_SCALE,
                 currentFrame.getRegionHeight() * CHARACTER_SCALE);
@@ -375,27 +347,37 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             }
         }
 
+        // Render orders and patience
         if (orderHandling != null) {
             orderHandling.renderOrders(batch, UNIT_SCALE);
         }
-
         customerHandler.renderSpawnPatience(batch, delta);
 
-        // Render inventory items
+        // Render inventory
         if (inventory != null) {
             inventory.render(batch);
         }
-
         batch.end();
 
+        // Render foreground layers last
         for (int index : foregroundIndices) {
             tiledMapRenderer.render(new int[] {index});
         }
 
-        // Update and render game controls
-        gameControls.render(batch);
+        // Handle character movement
+        boolean moved = handleCharacterInput(delta);
+        if (moved) {
+            Machines.hideAllOptions(tiledMap, machinesList);
+        }
+        checkNearbyMachines();
+        if (!moved) {
+            currentAnimation = walkDown;
+        }
 
-        // Handle inventory drag and drop
+        // Update customers
+        customerHandler.update(delta);
+
+        // Handle inventory interaction
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -406,6 +388,48 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             inventory.handleInput(touchPos.x, touchPos.y, false, tiledMap);
+        }
+
+        // Render game controls on top of game
+        batch.begin();
+        gameControls.render(batch);
+        batch.end();
+
+        // Draw UI elements if game is running
+        if (!isMenuActive && !isInstructionsActive) {
+            batch.begin();
+            // Use screen coordinates for UI
+            batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+            font.setColor(Color.BLACK);
+            
+            // Left side of inventory: Day and Time
+            font.draw(batch, "Day: " + currentDay, INVENTORY_X - 250, INVENTORY_Y + 55);
+            
+            // Format time
+            int minutes = (int)(currentDayTime / 60);
+            int seconds = (int)(currentDayTime % 60);
+            String timeText = String.format("Time: %02d:%02d", minutes, seconds);
+            font.draw(batch, timeText, INVENTORY_X - 253, INVENTORY_Y + 27);
+            
+            // Right side of inventory: Earnings on two lines
+            float inventoryEndX = INVENTORY_X + (32 * 8 * 1.5f);  // Right edge of inventory
+            font.draw(batch, "Earnings: " + currentEarnings,
+                     inventoryEndX + 90, INVENTORY_Y + 55);
+            font.draw(batch, "Goal: " + earningGoal,
+                     inventoryEndX + 90, INVENTORY_Y + 27);
+            batch.end();
+        }
+
+        if (isGameOver) {
+            batch.begin();
+            // Use screen coordinates for game over text
+            batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+            font.setColor(Color.RED);
+            font.draw(batch, "GAME OVER! You didn't reach the earning goal!", 
+                     VIRTUAL_WIDTH/2 - 200, VIRTUAL_HEIGHT/2);
+            font.draw(batch, "Press ENTER to return to main menu", 
+                     VIRTUAL_WIDTH/2 - 150, VIRTUAL_HEIGHT/2 - 50);
+            batch.end();
         }
     }
 
@@ -562,21 +586,32 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (gameMenu != null) gameMenu.dispose();
         if (instructions != null) instructions.dispose();
         if (gameControls != null) gameControls.dispose();
+        if (font != null) font.dispose();
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        // Escape key to toggle menu and pause
-        if (keycode == Input.Keys.ESCAPE) {
+        // Escape key to toggle menu and pause - only works after game has started
+        if (keycode == Input.Keys.ESCAPE && !isFirstStart) {
             isMenuActive = !isMenuActive;
             isPaused = isMenuActive;
 
-            // Pause/resume all machines
-            for (Machines.Machine machine : machinesList) {
-                if (isPaused) {
+            // Pause/resume all machines and customer spawning
+            if (isPaused) {
+                for (Machines.Machine machine : machinesList) {
                     machine.pauseProcess();
-                } else {
+                }
+                if (customerHandler != null) {
+                    customerHandler.stopSpawning();
+                    customerHandler.pauseAllCustomerTimers();
+                }
+            } else {
+                for (Machines.Machine machine : machinesList) {
                     machine.resumeProcess();
+                }
+                if (customerHandler != null) {
+                    customerHandler.resumeSpawning();
+                    customerHandler.resumeAllCustomerTimers();
                 }
             }
             return true;
@@ -584,12 +619,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         if (isPaused) {
             return false;
-        }
-
-        // for game menu
-        if (isMenuActive && keycode == Input.Keys.ENTER) {
-            isMenuActive = false; // Switch to game mode
-            return true;
         }
 
         // space key to interact with machines
@@ -609,10 +638,14 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return true;
         }
 
-        if (keycode == Input.Keys.NUM_1)
-            tiledMap.getLayers().get(0).setVisible(!tiledMap.getLayers().get(0).isVisible());
-        if (keycode == Input.Keys.NUM_2)
-            tiledMap.getLayers().get(1).setVisible(!tiledMap.getLayers().get(1).isVisible());
+        // Add handling for game over state
+        if (isGameOver && keycode == Input.Keys.ENTER) {
+            isGameOver = false;
+            isMenuActive = true;
+            isPaused = true;
+            initializeGame(); // Reset game state
+            return true;
+        }
 
         return false;
     }
@@ -622,7 +655,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         float tileSize = 16 * UNIT_SCALE;
         int characterTileX = (int)(characterPosition.x / tileSize);
         int characterTileY = (int)(characterPosition.y / tileSize);
-        int radius = 2; // Same radius as machine interaction
+        int radius = 2; // Back to original 2 tile radius for better usability
 
         for (Machines.Machine machine : machinesList) {
             if (machine.orderReady) {
@@ -651,7 +684,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
                                 machine.orderReady = false;
                                 machine.isBusy = false;
-                                System.out.println("Order collected from " + machine.name);
                                 return true;
                             } else {
                                 System.out.println("Inventory is full!");
@@ -667,39 +699,41 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private void serveNearbyCustomers() {
         float tileSize = 16 * UNIT_SCALE;
-        float interactionRange = tileSize * 2; // 2 tiles range for serving
+        float interactionRange = tileSize * 2;
 
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (!customer.isSeated) continue;
 
-            // Calculate distance between player and customer
             float distanceX = Math.abs(characterPosition.x - customer.position.x);
             float distanceY = Math.abs(characterPosition.y - customer.position.y);
 
             if (distanceX <= interactionRange && distanceY <= interactionRange) {
-                // Get customer's order from OrderHandling
                 String customerOrder = orderHandling.getOrderForCustomer(customer);
-                if (customerOrder != null) {
-                    // Try to serve the order from inventory
-                    if (inventory.serveOrder(customerOrder)) {
-                        // Order successfully served
-                        orderHandling.completeOrder(customer);
-
-                        // Free up the seat
-                        if (customer.currentSeatId != -1) {
-                            occupiedSeats.remove(customer.currentSeatId);
-                        }
-
-                        // Remove the served customer completely
-                        customerHandler.removeCustomer(customer);
-
-                        // Enable random spawning of new customer
-                        customerHandler.customerServed();
-
-                        System.out.println("Successfully served customer!");
+                if (customerOrder != null && inventory.serveOrder(customerOrder)) {
+                    // Calculate earnings based on customer patience
+                    int earnings = calculateEarnings(customer);
+                    currentEarnings += earnings;
+                    
+                    // Complete the order and handle customer
+                    orderHandling.completeOrder(customer);
+                    if (customer.currentSeatId != -1) {
+                        occupiedSeats.remove(customer.currentSeatId);
                     }
+                    customerHandler.removeCustomer(customer);
+                    customerHandler.customerServed();
                 }
             }
+        }
+    }
+
+    private int calculateEarnings(CustomerHandler.Customer customer) {
+        float patienceRatio = customer.remainingPatienceTime / customer.maxPatienceTime;
+        if (patienceRatio > 0.66f) {  // Top third - white
+            return 50;
+        } else if (patienceRatio > 0.33f) {  // Middle third - yellow
+            return 30;
+        } else {  // Bottom third - red
+            return 10;
         }
     }
 
@@ -771,7 +805,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 // Return to spawn if no seat found
                 if (!wasSeated) {
                     customer.position.set(800, 210);
-                    // Don't reset timers if returning to spawn without being seated
                 }
                 return true;
             }
@@ -783,7 +816,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (isMenuActive) {
             if (gameMenu.touchDown(screenX, screenY)) {
-                return true; // Exit button clicked
+                return true;
+            }
+            if (!isInstructionsActive && !isFirstStart && gameControls.touchDown(screenX, screenY)) {
+                return true;
             }
         }
 
@@ -791,10 +827,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             if (instructions.touchDown(screenX, screenY)) {
                 return true;
             }
-        }
-
-        if (gameControls.touchDown(screenX, screenY)) {
-            return true; // Leave button clicked
         }
 
         if (button != Input.Buttons.LEFT) {
@@ -838,10 +870,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 );
                 return true;
             }
-            if (orderHandling != null) {
-                orderHandling.renderOrders(batch, UNIT_SCALE);
-            }
-            batch.end();
         }
         return false;
     }
@@ -861,4 +889,225 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     @Override public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return false; }
     @Override public boolean scrolled(float amountX, float amountY) { return false; }
     public boolean scrolled(int amount) { return false; }
+
+    private GameMenu.MenuListener createMenuListener() {
+        return new GameMenu.MenuListener() {
+            @Override
+            public void onStartGame() {
+                if (!isFirstStart) {
+                    // Dispose current game resources
+                    disposeGameResources();
+                    // Reinitialize game
+                    initializeGame();
+                    // Reinitialize sounds
+                    Machines.initializeSounds();
+                }
+                isMenuActive = false;
+                isPaused = false;
+                isFirstStart = false;
+                // Start customer spawning when game starts
+                if (customerHandler != null) {
+                    customerHandler.startSpawning();
+                }
+                // Make sure timers are running
+                if (customerHandler != null) {
+                    customerHandler.resumeAllCustomerTimers();
+                }
+            }
+
+            @Override
+            public void onResumeGame() {
+                isMenuActive = false;
+                isPaused = false;
+                // Resume all machines
+                for (Machines.Machine machine : machinesList) {
+                    machine.resumeProcess();
+                }
+                // Resume customer spawning and timers
+                if (customerHandler != null) {
+                    customerHandler.resumeSpawning();
+                    customerHandler.resumeAllCustomerTimers();
+                }
+            }
+
+            @Override
+            public void onExitGame() {
+                Gdx.app.exit();
+            }
+        };
+    }
+
+    private GameControls.ControlsListener createControlsListener() {
+        return new GameControls.ControlsListener() {
+            @Override
+            public void onLeaveGame() {
+                isMenuActive = true;
+                isPaused = true;
+                // Pause all systems when leaving game
+                for (Machines.Machine machine : machinesList) {
+                    machine.pauseProcess();
+                }
+                if (customerHandler != null) {
+                    customerHandler.stopSpawning();
+                    customerHandler.pauseAllCustomerTimers();
+                }
+            }
+
+            @Override
+            public void onShowInstructions() {
+                if (!isInstructionsActive) {  // Only proceed if not already in instructions
+                    isInstructionsActive = true;
+                    isMenuActive = false;
+                    isPaused = true;
+                    // Pause all systems when showing instructions
+                    for (Machines.Machine machine : machinesList) {
+                        machine.pauseProcess();
+                    }
+                    if (customerHandler != null) {
+                        customerHandler.stopSpawning();
+                        customerHandler.pauseAllCustomerTimers();
+                    }
+                }
+            }
+
+            @Override
+            public void onControlBGM() {
+                mute = !mute;
+                if (mute) {
+                    bgm.setVolume(0f);
+                } else {
+                    bgm.setVolume(0.2f);
+                }
+                gameControls.setMute(mute);
+            }
+        };
+    }
+
+    private Instructions.InstructionListener createInstructionsListener() {
+        return new Instructions.InstructionListener() {
+            @Override
+            public void onBackToGame() {
+                isInstructionsActive = false;
+                isMenuActive = true;
+                // Keep the game paused since we're going back to main menu
+                isPaused = true;
+            }
+        };
+    }
+
+    private void endDay() {
+        if (currentEarnings >= earningGoal) {
+            // Advance to next day
+            currentDay++;
+            currentEarnings = 0;  // Reset earnings
+            earningGoal += earningGoalIncrement;
+            currentDayTime = dayTimer;
+            
+            // Reset game state for new day
+            // Clear all customers and their orders
+            if (customerHandler != null) {
+                customerHandler.stopSpawning();
+                for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+                    // Remove order displays/bubbles
+                    orderHandling.completeOrder(customer);  // This will remove the order
+                    if (customer.currentSeatId != -1) {
+                        occupiedSeats.remove(customer.currentSeatId);
+                    }
+                    customerHandler.removeCustomer(customer);
+                }
+                
+                // Clear all seats
+                occupiedSeats.clear();
+                
+                // Clear all machines
+                for (Machines.Machine machine : machinesList) {
+                    machine.isBusy = false;
+                    machine.orderReady = false;
+                    // Clear machine displays
+                    TiledMapTileLayer displayLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayLayer);
+                    if (displayLayer != null && displayLayer.getCell(machine.displayX, machine.displayY) != null) {
+                        displayLayer.getCell(machine.displayX, machine.displayY).setTile(null);
+                    }
+                    // Hide status boxes
+                    String[] colors = {" Green ", " Yellow ", " Red "};
+                    for (String color : colors) {
+                        TiledMapTileLayer boxLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayBoxLayer + color + machine.machineId);
+                        if (boxLayer != null) {
+                            boxLayer.setVisible(false);
+                        }
+                    }
+                }
+
+                customerHandler.startSpawning();  // Restart customer spawning
+            }
+            
+            // Reset character position to starting position
+            characterPosition.set(757, 512);
+            currentAnimation = walkDown;
+            
+        } else {
+            // Game Over
+            isGameOver = true;
+            isPaused = true;
+            if (customerHandler != null) {
+                customerHandler.stopSpawning();
+                customerHandler.pauseAllCustomerTimers();
+            }
+        }
+    }
+
+    private void clearOrderDisplaysForSeat(int seatId) {
+        // Find and clear cells related to this seat
+        MapLayer seatLayer = tiledMap.getLayers().get("Seats");
+        if (seatLayer != null) {
+            for (MapObject obj : seatLayer.getObjects()) {
+                if (obj instanceof TiledMapTileMapObject) {
+                    TiledMapTileMapObject seat = (TiledMapTileMapObject) obj;
+                    int currentSeatId = seat.getProperties().get("Seat", -1, Integer.class);
+                    if (currentSeatId == seatId) {
+                        // Get seat position
+                        int tileX = (int)(seat.getX() * UNIT_SCALE / (16 * UNIT_SCALE));
+                        int tileY = (int)(seat.getY() * UNIT_SCALE / (16 * UNIT_SCALE));
+                        
+                        // Clear cells in a larger area around the seat position (7x7 area)
+                        for (int x = tileX - 3; x <= tileX + 3; x++) {
+                            for (int y = tileY - 3; y <= tileY + 3; y++) {
+                                // Clear any order-related cells at this position
+                                clearCellInLayer(x, y, "Orders");
+                                clearCellInLayer(x, y, "Order Bubbles");
+                                clearCellInLayer(x, y, "Order Icons");
+                                clearCellInLayer(x, y, "Patience Bubbles");
+                                clearCellInLayer(x, y, "Patience");
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void clearCellInLayer(int x, int y, String layerName) {
+        TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(layerName);
+        if (layer != null && x >= 0 && x < layer.getWidth() && y >= 0 && y < layer.getHeight()) {
+            TiledMapTileLayer.Cell cell = layer.getCell(x, y);
+            if (cell != null) {
+                cell.setTile(null);
+            }
+        }
+    }
+
+    // When a customer's patience runs out, make sure to free their seat
+    private void handleCustomerTimeout(CustomerHandler.Customer customer) {
+        if (customer.currentSeatId != -1) {
+            // Remove from occupied seats
+            occupiedSeats.remove(customer.currentSeatId);
+            
+            // Remove their order and display
+            orderHandling.completeOrder(customer);
+            
+            // Make sure to remove from the customer handler's list
+            customerHandler.removeCustomer(customer);
+        }
+    }
 }

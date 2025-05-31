@@ -11,20 +11,14 @@ import com.badlogic.gdx.math.Vector2;
 
 public class GameControls {
 
-    private final Texture leaveButtonTexture;
     private final Texture helpButtonTexture;
-    private final Texture pauseButtonTexture;
     private final Texture soundOnButtonTexture;
     private final Texture soundOffButtonTexture;
 
-    private final Rectangle leaveButtonBounds;
     private final Rectangle helpButtonBounds;
-    private final Rectangle pauseButtonBounds;
     private final Rectangle soundButtonBounds;
 
-    private final Vector2 leaveButtonPosition;
     private final Vector2 helpButtonPosition;
-    private final Vector2 pauseButtonPosition;
     private final Vector2 soundButtonPosition;
 
     private final BitmapFont font;
@@ -55,75 +49,48 @@ public class GameControls {
 
         layout = new GlyphLayout();
 
-        leaveButtonTexture = new Texture(Gdx.files.internal("buttons/leave.png"));
         helpButtonTexture = new Texture(Gdx.files.internal("buttons/help.png"));
-        pauseButtonTexture = new Texture(Gdx.files.internal("buttons/pause.png"));
         soundOnButtonTexture = new Texture(Gdx.files.internal("buttons/sound-on.png"));
         soundOffButtonTexture = new Texture(Gdx.files.internal("buttons/sound-off.png"));
 
         int buttonWidth = 100;
-        int buttonHeight = 60;
+        int buttonHeight = 70;
 
-        leaveButtonPosition = new Vector2(36, 100);
-        helpButtonPosition = new Vector2(890, 100);
-        pauseButtonPosition = new Vector2(136, 100);
-        soundButtonPosition = new Vector2(790, 100);
+        helpButtonPosition = new Vector2(1140, 50);
+        soundButtonPosition = new Vector2(1022, 50);
 
-        leaveButtonBounds = new Rectangle(leaveButtonPosition.x, leaveButtonPosition.y, buttonWidth, buttonHeight);
         helpButtonBounds = new Rectangle(helpButtonPosition.x, helpButtonPosition.y, buttonWidth, buttonHeight);
-        pauseButtonBounds = new Rectangle(pauseButtonPosition.x, pauseButtonPosition.y, buttonWidth, buttonHeight - 7);
-        soundButtonBounds = new Rectangle(soundButtonPosition.x, soundButtonPosition.y, buttonWidth, buttonHeight - 5);
+        soundButtonBounds = new Rectangle(soundButtonPosition.x, soundButtonPosition.y, buttonWidth, buttonHeight);
     }
 
     public void render(SpriteBatch batch) {
-        batch.begin();
-
-        String earningsText = earning + " / " + goal;
-        String dayText = "Day: " + day;
-
-        layout.setText(font, dayText);
-        float dayX = 800 - layout.width / 2f;
-
-        font.draw(batch, dayText, dayX, 566);
-
-        layout.setText(font, earningsText);
-        float earningsX = 800 - layout.width / 2f;
-
-        font.draw(batch, earningsText, earningsX, 536);
-
-        batch.draw(leaveButtonTexture, leaveButtonPosition.x, leaveButtonPosition.y, leaveButtonBounds.width, leaveButtonBounds.height);
         batch.draw(helpButtonTexture, helpButtonPosition.x, helpButtonPosition.y, helpButtonBounds.width, helpButtonBounds.height);
-        batch.draw(pauseButtonTexture, pauseButtonPosition.x, pauseButtonPosition.y, pauseButtonBounds.width, pauseButtonBounds.height);
-
         Texture currentSoundTexture = mute ? soundOffButtonTexture : soundOnButtonTexture;
         batch.draw(currentSoundTexture, soundButtonPosition.x, soundButtonPosition.y, soundButtonBounds.width, soundButtonBounds.height);
-
-        batch.end();
     }
 
     public boolean touchDown(int screenX, int screenY) {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
-        if (screenX >= 60 && screenX <= 160 && invertedY >= 20 && invertedY <= 90) {
-            if (listener != null) listener.onLeaveGame();
+        // Handle sound button first
+        if (soundButtonBounds.contains(screenX, invertedY)) {
+            if (listener != null) {
+                listener.onControlBGM();
+            }
+            return true; // Return immediately after handling sound button
         }
 
-        if (screenX >= 1140 && screenX <= 1234 && invertedY >= 20 && invertedY <= 90) {
-            if (listener != null) listener.onShowInstructions();
-        }
-
-        if (screenX >= 1022 && screenX <= 1095 && invertedY >= 20 && invertedY <= 90) {
-            if (listener != null) listener.onControlBGM();
-        }
-
-        if (screenX >= 186 && screenX <= 258 && invertedY >= 20 && invertedY <= 90) {
-            if (listener != null) Gdx.app.log("Game Controls", "Pause Button Clicked!");
+        // Only check help button if sound button wasn't clicked
+        if (helpButtonBounds.contains(screenX, invertedY)) {
+            if (listener != null) {
+                listener.onShowInstructions();
+            }
+            return true;
         }
 
         return false;
     }
 
-    // call this pag dineliver order
     public void setEarning(int earning) {
         if (earning < goal) {
             this.earning = earning;
@@ -140,9 +107,7 @@ public class GameControls {
 
     public void dispose() {
         font.dispose();
-        leaveButtonTexture.dispose();
         helpButtonTexture.dispose();
-        pauseButtonTexture.dispose();
         soundOnButtonTexture.dispose();
         soundOffButtonTexture.dispose();
     }

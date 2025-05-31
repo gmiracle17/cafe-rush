@@ -72,17 +72,15 @@ public class GameMenu {
 
     public void render(SpriteBatch batch) {
         batch.setProjectionMatrix(menuCamera.combined);
-        batch.begin();
 
         batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(startButtonTexture, startButtonPosition.x, startButtonPosition.y, startButtonBounds.width, startButtonBounds.height);
-
+        
         if (!isFirstStart) {
             batch.draw(resumeButtonTexture, resumeButtonPosition.x, resumeButtonPosition.y, resumeButtonBounds.width, resumeButtonBounds.height);
         }
-
+        
         batch.draw(exitButtonTexture, exitButtonPosition.x, exitButtonPosition.y, exitButtonBounds.width, exitButtonBounds.height);
-        batch.end();
     }
 
     public boolean touchDown(int screenX, int screenY) {

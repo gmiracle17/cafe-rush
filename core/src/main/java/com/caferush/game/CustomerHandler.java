@@ -21,7 +21,7 @@ public class CustomerHandler {
     private Texture spawnBubbleMinimal;
 
     private final CustomerSpawner spawnerThread;
-    private volatile boolean isRunning = true;
+    private volatile boolean isRunning = false;
     private final Object customersLock = new Object();
 
     private float minSpawnDelay = 3.0f; // minimum seconds between spawns
@@ -43,7 +43,8 @@ public class CustomerHandler {
         loadTextures();
 
         spawnerThread = new CustomerSpawner();
-        spawnerThread.start();
+        // Don't start the thread immediately
+        isRunning = false;
     }
 
     public Array<Customer> getCustomers() {
@@ -124,8 +125,14 @@ public class CustomerHandler {
     public void seatCustomer(Customer customer) {
         if (customer != null && !customer.isSeated) {
             customer.isSeated = true;
-            customer.stopWaitingforSeatTimer();// Stop spawn timer
-            customer.startWaitingforOrderTimer(); // Start seated timer
+            customer.stopWaitingforSeatTimer(); // Stop spawn timer
+            
+            // Initialize order timer values
+            customer.remainingWaitingforOrderTime = customer.getWaitingforOrderTime();
+            customer.maxWaitingforOrderTime = customer.getWaitingforOrderTime();
+            
+            // Start the order timer
+            customer.startWaitingforOrderTimer();
             System.out.println("Customer seated - switching to order patience timer");
         }
     }
@@ -206,8 +213,14 @@ public class CustomerHandler {
     private class CustomerSpawner extends Thread {
         @Override
         public void run() {
-            while (isRunning) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    // Only proceed if spawning is enabled
+                    if (!isRunning) {
+                        Thread.sleep(100); // Short sleep to prevent busy waiting
+                        continue;
+                    }
+
                     // Random delay between spawns
                     float delay = MathUtils.random(minSpawnDelay, maxSpawnDelay);
                     Thread.sleep((long)(delay * 1000));
@@ -217,6 +230,7 @@ public class CustomerHandler {
                         // 1. Below max customers
                         // 2. Spawn point is clear
                         // 3. We're allowed to spawn new customers
+                        // 4. Spawning is still enabled
                         if (customers.size < maxCustomers && 
                             isSpawnPointClear(spawnX, spawnY) && 
                             canSpawnNewCustomer && 
@@ -245,6 +259,7 @@ public class CustomerHandler {
     private class CustomerPatienceTimer extends Thread {
         private Customer customer;
         private volatile boolean timerRunning = true;
+        private volatile boolean isPaused = false;
         private float patienceTime;
         private String timerType; // "spawn" or "seated"
 
@@ -256,43 +271,46 @@ public class CustomerHandler {
 
         @Override
         public void run() {
-            float updateInterval = 0.1f;
+            try {
+                while (timerRunning && patienceTime > 0) {
+                    if (!isPaused) {
+                        Thread.sleep(100); // Update every 100ms
+                        patienceTime -= 0.1f;
+                        
+                        // Update the appropriate timer based on type
+                        if (timerType.equals("spawn")) {
+                            customer.remainingWaitingforSeatTime = patienceTime;
+                            customer.remainingPatienceTime = patienceTime;
+                        } else if (timerType.equals("seated")) {
+                            customer.remainingWaitingforOrderTime = patienceTime;
+                            customer.remainingPatienceTime = patienceTime;
+                        }
 
-            // Update the appropriate timer based on type
-            while (timerRunning) {
-                try {
-                    Thread.sleep((long)(updateInterval * 1000));
-
-                    if (timerType.equals("spawn")) {
-                        customer.remainingWaitingforSeatTime -= updateInterval;
-                        customer.remainingPatienceTime = customer.remainingWaitingforSeatTime;
-
-                        if (customer.remainingWaitingforSeatTime <= 0) {
+                        // Check if patience is lost
+                        if (patienceTime <= 0) {
                             customer.losePatience();
                             break;
                         }
-                    } else if (timerType.equals("seated")) {
-                        synchronized(customer) {
-                            customer.remainingWaitingforOrderTime -= updateInterval;
-                            customer.remainingPatienceTime = customer.remainingWaitingforOrderTime;
-                        }
-
-                        if (customer.remainingWaitingforOrderTime <= 0) {
-                            customer.losePatience();
-                            break;
-                        }
+                    } else {
+                        Thread.sleep(100); // Keep checking pause state
                     }
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
+        }
+
+        public void pauseTimer() {
+            isPaused = true;
+        }
+
+        public void resumeTimer() {
+            isPaused = false;
         }
 
         public void stopTimer() {
             timerRunning = false;
-            this.interrupt();
+            interrupt();
         }
     }
 
@@ -356,18 +374,19 @@ public class CustomerHandler {
         }
 
         public void startWaitingforOrderTimer() {
-            if (seatedPatienceTimer == null) {
-                // Set the variables that the timer and bubble rendering use
-                this.remainingPatienceTime = patienceAtSeat;
-                this.maxPatienceTime = patienceAtSeat;
-
-                // Also set the specific waiting variables for consistency
-                this.remainingWaitingforOrderTime = patienceAtSeat;
-                this.maxWaitingforOrderTime = patienceAtSeat;
-
-                seatedPatienceTimer = new CustomerPatienceTimer(this, patienceAtSeat, "seated");
-                seatedPatienceTimer.start();
+            if (seatedPatienceTimer != null) {
+                seatedPatienceTimer.stopTimer();
             }
+            
+            // Initialize timer values if not already set
+            if (maxWaitingforOrderTime <= 0) {
+                maxWaitingforOrderTime = getWaitingforOrderTime();
+                remainingWaitingforOrderTime = maxWaitingforOrderTime;
+            }
+            
+            seatedPatienceTimer = new CustomerPatienceTimer(this, remainingWaitingforOrderTime, "seated");
+            seatedPatienceTimer.start();
+            System.out.println("Started order timer with time: " + remainingWaitingforOrderTime);
         }
 
         public void stopWaitingforOrderTimer() {
@@ -420,6 +439,24 @@ public class CustomerHandler {
             if (isInSpawnPhase()) return "spawn";
             return "none";
         }
+
+        public void pauseAllTimers() {
+            if (spawnPatienceTimer != null) {
+                spawnPatienceTimer.pauseTimer();
+            }
+            if (seatedPatienceTimer != null) {
+                seatedPatienceTimer.pauseTimer();
+            }
+        }
+
+        public void resumeAllTimers() {
+            if (spawnPatienceTimer != null) {
+                spawnPatienceTimer.resumeTimer();
+            }
+            if (seatedPatienceTimer != null) {
+                seatedPatienceTimer.resumeTimer();
+            }
+        }
     }
 
     public void setSpawnDelay(float min, float max) {
@@ -465,5 +502,45 @@ public class CustomerHandler {
         // Allow spawning of new customers when one is served
         canSpawnNewCustomer = true;
         System.out.println("Customer served, enabling new spawns");
+    }
+
+    // Add methods to control spawning
+    public void startSpawning() {
+        synchronized(customersLock) {
+            // Clear any existing customers when starting fresh
+            customers.clear();
+            canSpawnNewCustomer = true;
+        }
+        isRunning = true;
+        if (!spawnerThread.isAlive()) {
+            spawnerThread.start();
+        }
+    }
+
+    public void stopSpawning() {
+        isRunning = false;
+    }
+
+    public void resumeSpawning() {
+        synchronized(customersLock) {
+            canSpawnNewCustomer = true;
+        }
+        isRunning = true;
+    }
+
+    public void pauseAllCustomerTimers() {
+        synchronized(customersLock) {
+            for (Customer customer : customers) {
+                customer.pauseAllTimers();
+            }
+        }
+    }
+
+    public void resumeAllCustomerTimers() {
+        synchronized(customersLock) {
+            for (Customer customer : customers) {
+                customer.resumeAllTimers();
+            }
+        }
     }
 }
