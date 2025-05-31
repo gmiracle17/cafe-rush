@@ -85,7 +85,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private int currentDay = 1;
     private int currentEarnings = 0;
     private int earningGoal = 300;
-    private int earningGoalIncrement = 50;
     private float dayTimer = 180f; // 3 minutes default
     private float currentDayTime = dayTimer;
     private boolean isGameOver = false;
@@ -1139,6 +1138,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private void nextDay() {
         // Save current day and goal
         currentDay++;
+        int earningGoalIncrement = 50;
         earningGoal += earningGoalIncrement;  // Increment by 50
         
         // Stop all current systems

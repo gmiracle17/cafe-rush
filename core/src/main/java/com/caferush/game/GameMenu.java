@@ -140,5 +140,6 @@ public class GameMenu {
         if (startButtonTexture != null) startButtonTexture.dispose();
         if (resumeButtonTexture != null) resumeButtonTexture.dispose();
         if (exitButtonTexture != null) exitButtonTexture.dispose();
+        if (buttonClickSound != null) buttonClickSound.dispose();
     }
 }

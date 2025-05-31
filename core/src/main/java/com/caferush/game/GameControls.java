@@ -29,10 +29,9 @@ public class GameControls {
         void onControlBGM();
     }
 
-    private ControlsListener listener;
+    private final ControlsListener listener;
 
     private Sound buttonClickSound;
-    private float soundVolume = 0.5f;
 
     public GameControls(ControlsListener listener) {
         this.listener = listener;
@@ -69,6 +68,7 @@ public class GameControls {
 
     private void playButtonSound() {
         if (buttonClickSound != null) {
+            float soundVolume = 0.5f;
             buttonClickSound.play(soundVolume);
         }
     }
@@ -105,5 +105,6 @@ public class GameControls {
         helpButtonTexture.dispose();
         soundOnButtonTexture.dispose();
         soundOffButtonTexture.dispose();
+        if (buttonClickSound != null) buttonClickSound.dispose();
     }
 }

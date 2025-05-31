@@ -12,6 +12,7 @@ import com.caferush.game.CustomerHandler.Customer;
 public class OrderHandling {
 
     private static Sound meow;
+    private static Sound angryMeow;
     private static final int[][] menu_items = {
             {64,  0, 16, 16}, // hot choco
             {16,  0, 16, 16},  // espresso
@@ -64,6 +65,9 @@ public class OrderHandling {
         try {
             if (meow == null) {
                 meow = Gdx.audio.newSound(Gdx.files.internal("sfx/meow.mp3"));
+            }
+            if (angryMeow == null) {
+                angryMeow = Gdx.audio.newSound(Gdx.files.internal("sfx/angry-meow.mp3"));
             }
         } catch (Exception e) {
             System.err.println("Error loading order sounds: " + e.getMessage());
@@ -197,10 +201,6 @@ public class OrderHandling {
 
     // Complete an order for a customer
     public void completeOrder(Customer customer) {
-        if (meow != null) {
-            long soundId = meow.play();
-            meow.setVolume(soundId, 0.5f);
-        }
         OrderPosition orderToRemove = null;
         for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
             if (entry.value.customer == customer) {
@@ -209,6 +209,18 @@ public class OrderHandling {
             }
         }
         if (orderToRemove != null) {
+            if (customer.hasLostPatience()) {
+                if (angryMeow != null) {
+                    long angrySoundId = angryMeow.play();
+                    angryMeow.setVolume(angrySoundId, 0.3f);
+                }
+            }
+            else {
+                if (meow != null) {
+                    long soundId = meow.play();
+                    meow.setVolume(soundId, 1f);
+                }
+            }
             ordersPopup.remove(orderToRemove);
         }
     }
@@ -221,6 +233,10 @@ public class OrderHandling {
         if (meow != null) {
             meow.dispose();
             meow = null;
+        }
+        if (angryMeow != null) {
+            angryMeow.dispose();
+            angryMeow = null;
         }
     }
 }

@@ -177,11 +177,7 @@ public class CustomerHandler {
                 if (customer.hasLostPatience()) {
                     removeCustomer(customer);
                     long soundAngryMeow = angryMeow.play();
-                    if (customer.isSeated) {
-                        angryMeow.setVolume(soundAngryMeow, 0.2f);
-                    } else {
-                        angryMeow.setVolume(soundAngryMeow, 0.2f);
-                    }
+                    angryMeow.setVolume(soundAngryMeow, 0.3f);
                 }
             }
         }
