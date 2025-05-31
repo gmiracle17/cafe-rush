@@ -70,15 +70,24 @@ public class CustomerHandler {
     private void loadTextures() {
         Texture catBlackSheet = new Texture("pngs/cat-black-front.png");
         Texture catOrangeSheet = new Texture("pngs/cat-orange-front.png");
+        Texture boss1Sheet = new Texture("pngs/cat-office-brown-front-idle.png");
+        Texture boss2Sheet = new Texture("pngs/cat-office-brown2-front-idle.png");
+        Texture boss3Sheet = new Texture("pngs/cat-office-white-front-idle.png");
 
         characterSprites.add(catBlackSheet);
         characterSprites.add(catOrangeSheet);
+        characterSprites.add(boss1Sheet);
+        characterSprites.add(boss2Sheet);
+        characterSprites.add(boss3Sheet);
 
         int spriteWidth = 16;
         int spriteHeight = 16;
 
         customerSprites.add(new TextureRegion(catBlackSheet, 0, 0, spriteWidth, spriteHeight));
         customerSprites.add(new TextureRegion(catOrangeSheet, 0, 0, spriteWidth, spriteHeight));
+        customerSprites.add(new TextureRegion(boss1Sheet, 0, 0, spriteWidth, spriteHeight));
+        customerSprites.add(new TextureRegion(boss2Sheet, 0, 0, spriteWidth, spriteHeight));
+        customerSprites.add(new TextureRegion(boss3Sheet, 0, 0, spriteWidth, spriteHeight));
 
         // Load spawn patience bubble textures
         loadSpawnBubbleTextures();
@@ -92,14 +101,19 @@ public class CustomerHandler {
 
     public void addCustomer(float x, float y) {
         synchronized(customersLock) {
-            Customer customer = new Customer();
-            customer.position.set(x, y);
-
-            // Assign a random sprite
+            Customer customer;
+            TextureRegion chosenSprite = null;
             if (customerSprites.size > 0) {
-                customer.sprite = customerSprites.random();
+                chosenSprite = customerSprites.random();
             }
-
+            // If boss sprite, assign shorter patience times
+            if (chosenSprite != null && isBossSprite(chosenSprite)) {
+                customer = new Customer(15f, 30f); // Boss patience times
+            } else {
+                customer = new Customer(); // Regular customer
+            }
+            customer.position.set(x, y);
+            customer.sprite = chosenSprite;
             // Initialize patience timers and values before adding to list
             customer.remainingPatienceTime = customer.getWaitingforSeatTime();
             customer.maxPatienceTime = customer.getWaitingforSeatTime();
@@ -112,6 +126,15 @@ public class CustomerHandler {
             // Start spawn patience timer (not seated yet)
             customer.startWaitingforSeatTimer();
         }
+    }
+
+    private boolean isBossSprite(TextureRegion sprite) {
+        for (int i = 2; i <= 4; i++) {
+            if (customerSprites.get(i) == sprite) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void removeCustomer(Customer customer) {
@@ -362,6 +385,20 @@ public class CustomerHandler {
             this.remainingWaitingforSeatTime = patienceAtSpawn;
             this.maxWaitingforSeatTime = patienceAtSpawn;
         }
+
+        public Customer(float patienceAtSpawn, float patienceAtSeat) {
+            this.isSeated = false;
+            this.beingDragged = false;
+            this.hasLostPatience = false;
+            this.patienceAtSpawn = patienceAtSpawn;   // Custom patience time for spawn
+            this.patienceAtSeat = patienceAtSeat;     // Custom patience time for seated
+            this.remainingPatienceTime = patienceAtSpawn;
+            this.maxPatienceTime = patienceAtSpawn;
+            this.remainingWaitingforSeatTime = patienceAtSpawn;
+            this.maxWaitingforSeatTime = patienceAtSpawn;
+        }
+
+
 
         public void startWaitingforSeatTimer() {
             if (spawnPatienceTimer == null) {

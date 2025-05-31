@@ -47,8 +47,6 @@ Edit configurations
         - Main class: com.caferush.game.lwjgl3.DesktopLauncher
         - Classpath: cafe-rush.lwjgl3.main
         - JDK: Select Java 21
-    
-![alt text](image.png)
 
 ## 🛠 Tech Stack
 
@@ -60,9 +58,8 @@ Edit configurations
 
 The game uses multithreading with Machines, Customers, and Orders having separate threads to handle their different timers and behavior
 
-<br>
 
-**Machine Threads**
+<u>**Machine Threads**</u>
 
 The `Machines` class handles all machine threading and logic in Cafe Rush, managing the behavior and visual feedback of three different types of in-game machines (CoffeeMaker, Oven, PastryMaker).
 
