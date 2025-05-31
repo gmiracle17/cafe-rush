@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.audio.Sound;
 
 public class GameMenu {
     private Texture backgroundTexture;
@@ -32,6 +33,9 @@ public class GameMenu {
 
     private final MenuListener listener;
 
+    private Sound buttonClickSound;
+    private float soundVolume = 0.5f;
+
     public GameMenu(MenuListener listener) {
         this.listener = listener;
 
@@ -44,6 +48,8 @@ public class GameMenu {
 
         loadAssets();
         initializeBounds();
+
+        loadSounds();
     }
 
     private void loadAssets() {
@@ -70,6 +76,14 @@ public class GameMenu {
         exitButtonBounds = new Rectangle(exitButtonPosition.x, exitButtonPosition.y, buttonWidth, buttonHeight);
     }
 
+    private void loadSounds() {
+        try {
+            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("sfx/buttonclick3.mp3"));
+        } catch (Exception e) {
+            System.err.println("Error loading sound files: " + e.getMessage());
+        }
+    }
+
     public void render(SpriteBatch batch) {
         batch.setProjectionMatrix(menuCamera.combined);
 
@@ -83,10 +97,17 @@ public class GameMenu {
         batch.draw(exitButtonTexture, exitButtonPosition.x, exitButtonPosition.y, exitButtonBounds.width, exitButtonBounds.height);
     }
 
+    private void playButtonSound() {
+        if (buttonClickSound != null) {
+            buttonClickSound.play(soundVolume);
+        }
+    }
+
     public boolean touchDown(int screenX, int screenY) {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
         if (startButtonBounds.contains(screenX, invertedY)) {
+            playButtonSound();
             if (listener != null) {
                 listener.onStartGame();
                 isFirstStart = false;
@@ -96,6 +117,7 @@ public class GameMenu {
         }
 
         if (!isFirstStart && resumeButtonBounds.contains(screenX, invertedY)) {
+            playButtonSound();
             if (listener != null) {
                 listener.onResumeGame();
             }
@@ -103,6 +125,7 @@ public class GameMenu {
         }
 
         if (exitButtonBounds.contains(screenX, invertedY)) {
+            playButtonSound();
             if (listener != null) {
                 listener.onExitGame();
             }

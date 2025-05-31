@@ -1,5 +1,14 @@
 Cafe Map.tmx
 Menu Background.png
+buttons/exit.png
+buttons/help.png
+buttons/leave.png
+buttons/pause.png
+buttons/play.png
+buttons/resume.png
+buttons/sound-off.png
+buttons/sound-on.png
+buttons/start.png
 food-and-beverages.tsx
 images/Bar katto 2.0 icon sheet.png
 images/FOOD.png
@@ -7,6 +16,7 @@ images/Interiors_free_16x16.png
 images/neko-cafe-food.png
 images/neko-cafe-furnitures.png
 images/neko-cafe-tilemap.png
+instructions.png
 libgdx.png
 neko-cafe-furnitures.tsx
 neko-cafe-tilemap.tsx
@@ -29,6 +39,17 @@ pngs/cat-waiter-side.png
 pngs/neko-cafe-food.png
 pngs/neko-cafe-furnitures.png
 pngs/neko-cafe-tilemap.png
+pngs/speech-bubble-minimalpatience.png
+pngs/speech-bubble-moderatepatience.png
+pngs/speech-bubble.png
+pngs/waiting-minimal.png
+pngs/waiting-moderate.png
+pngs/waiting-normal.png
+sfx/angry-meow.mp3
+sfx/bgm.mp3
+sfx/ding-101492.mp3
+sfx/meow.mp3
+sfx/pop-39222.mp3
 trashbin.tsx
 ui/font-list.fnt
 ui/font-subtitle.fnt
