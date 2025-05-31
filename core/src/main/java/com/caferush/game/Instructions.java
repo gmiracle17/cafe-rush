@@ -8,18 +8,18 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class Instructions {
-    private Texture instructionsTexture;
-    private Texture resumeButtonTexture;
-    private Rectangle resumeButtonBounds;
-    private Vector2 resumeButtonPosition;
+    private final Texture instructionsTexture;
+    private final Texture resumeButtonTexture;
+    private final Rectangle resumeButtonBounds;
+    private final Vector2 resumeButtonPosition;
 
-    private OrthographicCamera menuCamera;
+    private final OrthographicCamera instructionsCamera;
 
     public interface InstructionListener {
         void onBackToGame();
     }
 
-    private InstructionListener listener;
+    private final InstructionListener listener;
 
     public Instructions(InstructionListener listener) {
         this.listener = listener;
@@ -28,13 +28,13 @@ public class Instructions {
         int screenHeight = Gdx.graphics.getHeight();
 
         // Initialize separate camera for menu
-        menuCamera = new OrthographicCamera();
-        menuCamera.setToOrtho(false, screenWidth, screenHeight);
-        menuCamera.update();
+        instructionsCamera = new OrthographicCamera();
+        instructionsCamera.setToOrtho(false, screenWidth, screenHeight);
+        instructionsCamera.update();
 
         // Load textures
         instructionsTexture = new Texture(Gdx.files.internal("instructions.png"));
-        resumeButtonTexture = new Texture(Gdx.files.internal("resume.png"));
+        resumeButtonTexture = new Texture(Gdx.files.internal("buttons/resume.png"));
 
         // Position buttons centered horizontally, with some vertical spacing
         int buttonWidth = 400;
@@ -45,7 +45,7 @@ public class Instructions {
 
     public void render(SpriteBatch batch) {
         // Use the menu's own camera
-        batch.setProjectionMatrix(menuCamera.combined);
+        batch.setProjectionMatrix(instructionsCamera.combined);
 
         batch.begin();
         batch.draw(instructionsTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

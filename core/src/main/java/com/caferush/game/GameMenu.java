@@ -48,9 +48,9 @@ public class GameMenu {
 
     private void loadAssets() {
         backgroundTexture = new Texture(Gdx.files.internal("Menu Background.png"));
-        startButtonTexture = new Texture(Gdx.files.internal("start.png"));
-        resumeButtonTexture = new Texture(Gdx.files.internal("resume.png"));
-        exitButtonTexture = new Texture(Gdx.files.internal("exit.png"));
+        startButtonTexture = new Texture(Gdx.files.internal("buttons/start.png"));
+        resumeButtonTexture = new Texture(Gdx.files.internal("buttons/resume.png"));
+        exitButtonTexture = new Texture(Gdx.files.internal("buttons/exit.png"));
     }
 
     private void initializeBounds() {

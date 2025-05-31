@@ -8,7 +8,7 @@ import com.badlogic.gdx.audio.Sound;
 
 public class Machines {
 
-    static Sound ding = Gdx.audio.newSound(Gdx.files.internal("sounds/ding-101492.mp3"));
+    static Sound ding = Gdx.audio.newSound(Gdx.files.internal("sfx/ding-101492.mp3"));
     private static Inventory inventory;
 
     public static void setInventory(Inventory inv) {
@@ -39,12 +39,11 @@ public class Machines {
 
         protected final int machineId;
 
-        public Machine(String name, int machineId, String machineLayer, String machineType, String optionsLayer,
+        public Machine(String name, int machineId, String machineType, String optionsLayer,
                        String optionsBoxLayer, String optionsHoverBoxLayer, String produceDisplayLayer,
                        String produceDisplayBoxLayer, long processTime, int displayX, int displayY) {
             this.name = name;
             this.machineId = machineId;
-            this.machineLayer = machineLayer;
             this.machineType = machineType;
             this.optionsLayer = optionsLayer;
             this.optionsBoxLayer = optionsBoxLayer;
@@ -184,12 +183,9 @@ public class Machines {
     }
 
     public static class CoffeeMaker extends Machine {
-        protected final float x, y;
-
-        public CoffeeMaker(String name, int machineID, int x, int y, int displayX, int displayY) {
+        public CoffeeMaker(String name, int machineID, int displayX, int displayY) {
             super(name,
                     machineID,
-                    "Coffee Makers",
                     "coffee_maker",
                     "Coffee Choices",
                     "Coffee Choices Box",
@@ -199,21 +195,13 @@ public class Machines {
                     5000,
                     displayX,
                     displayY);
-            this.x = x;
-            this.y = y;
         }
-
-        public float getX() { return this.x; }
-        public float getY() { return this.y; }
     }
 
     public static class PastryMaker extends Machine {
-        protected final int[] tileIDs = {49, 50, 61, 62};
-
         public PastryMaker(String name, int displayX, int displayY) {
             super(name,
                     1,
-                    "Machines and Furniture",
                     "pastry",
                     "Pastry Choices",
                     "Pastry Choices Box",
@@ -227,12 +215,9 @@ public class Machines {
     }
 
     public static class Oven extends Machine {
-        protected int[] tileIds;
-
-        public Oven(String name, int machineID, int[] tileIds, int displayX, int displayY) {
+        public Oven(String name, int machineID, int displayX, int displayY) {
             super(name,
                     machineID,
-                    "Machines and Furniture",
                     "oven",
                     "Cooked Choices",
                     "Cooked Choices Box",
@@ -242,7 +227,6 @@ public class Machines {
                     20000,
                     displayX,
                     displayY);
-            this.tileIds = tileIds;
         }
     }
 
@@ -337,46 +321,27 @@ public class Machines {
         }
     }
 
-    /* honestly, don't need this anymore */
-    public static String checkMachineTypeAtExact(TiledMap map, int tileX, int tileY) {
-        String machineType = checkExactMachineAt(map, tileX, tileY, "Coffee Makers", "coffee_maker");
-        if (machineType != null) return machineType;
-
-        machineType = checkExactMachineAt(map, tileX, tileY, "Machines and Furniture", "oven");
-        if (machineType != null) return machineType;
-
-        machineType = checkExactMachineAt(map, tileX, tileY, "Machines and Furniture", "pastry");
-        if (machineType != null) return machineType;
-
-        return null;
-    }
-
-    /* Request: Please make this interact with specified tiles in Machine Threads
-     * Coffee_maker(3): One tile only
-     * Oven(2): 4 different tiles
-     * Pastry(1): 4 different tiles
-     * */
-    private static String checkExactMachineAt(TiledMap map, int tileX, int tileY,
-                                              String layerName, String machineType) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
-        if (layer == null) return null;
-
-        TiledMapTileLayer.Cell cell = layer.getCell(tileX, tileY);
-        if (cell == null || cell.getTile() == null) return null;
-
-        String machineProp = cell.getTile().getProperties().get("machine", String.class);
-        if (machineType.equals(machineProp)) {
-            return machineType;
+    public static String checkForSpecificMachine(TiledMap tiledMap, int centerX, int centerY, int radius, String machineType) {
+        for (int y = centerY - radius; y <= centerY + radius; y++) {
+            for (int x = centerX - radius; x <= centerX + radius; x++) {
+                TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("Machines and Furniture");
+                TiledMapTileLayer.Cell cell = layer.getCell(x, y);
+                if (cell != null && cell.getTile() != null) {
+                    String foundType = cell.getTile().getProperties().get("machine", String.class);
+                    if (foundType != null && foundType.equals(machineType)) {
+                        return foundType; // Return the found machine type directly
+                    }
+                }
+            }
         }
-
         return null;
     }
 
-    private void handleOptionClick(int tileX, int tileY, Machine[] machinesList, TiledMap tiledMap) {
+    public static void handleOptionClick(int tileX, int tileY, Machines.Machine[] machines, TiledMap tiledMap) {
         boolean processed = false;
 
         // Handle normal machine interaction
-        for (Machine machine : machinesList) {
+        for (Machines.Machine machine : machines) {
             if (machine.isBusy) {
                 System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
                 continue;
@@ -407,9 +372,15 @@ public class Machines {
             }
         }
 
-        // Optional: If no machine was available to process the order, you can handle it here
         if (!processed) {
             System.out.println("No available machine to process the order.");
+        }
+    }
+
+    public static void dispose() {
+        if (ding != null) {
+            ding.dispose();
+            ding = null;
         }
     }
 }

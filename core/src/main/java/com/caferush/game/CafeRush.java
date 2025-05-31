@@ -25,10 +25,7 @@ import java.util.ArrayList;
 import com.badlogic.gdx.utils.ObjectMap;
 
 
-/**
- * Main game class for Cafe Rush
- *
- * */
+// Main game class for Cafe Rush
 public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private GameMenu gameMenu;
@@ -50,13 +47,12 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private static final float CHARACTER_SCALE = 5f;
     private static final float ANIMATION_FRAME_DURATION = 0.1f;
 
-
     private OrderHandling orderHandling;
     private CustomerHandler customerHandler;
     private Inventory inventory;
     // Position inventory in the middle bottom of the screen
     private static final float INVENTORY_X = VIRTUAL_WIDTH / 2 - (32 * 8 * 1.5f) / 2; // Center horizontally (considering 8 slots)
-    private static final float INVENTORY_Y = 20; 
+    private static final float INVENTORY_Y = 20;
     private static final float INVENTORY_SCALE = 1.5f;
 
     private OrthographicCamera camera;
@@ -78,15 +74,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private String nearMachineType = null;
 
     /* All Machines */
-    Machines.Machine CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1,6, 10, 6, 11);
-    Machines.Machine CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2,7, 10, 7, 11);
-    Machines.Machine CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3,8, 10, 8, 11);
-
-    Machines.Machine Pastry1 = new Machines.PastryMaker("Pastry1", 7,9);
-
-    Machines.Machine Oven1 = new Machines.Oven("Oven1", 1, new int[]{15, 16, 27, 28}, 12,11);
-    Machines.Machine Oven2 = new Machines.Oven("Oven2", 2, new int[]{17, 18, 29, 30}, 14,11);
-
+    Machines.Machine CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2;
     private Machines.Machine[] machinesList;
 
     private ObjectMap<Integer, CustomerHandler.Customer> occupiedSeats = new ObjectMap<>();
@@ -146,12 +134,12 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         stateTime = 0f;
 
         // Initialize machines
-        CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1, 6, 10, 6, 11);
-        CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2, 7, 10, 7, 11);
-        CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3, 8, 10, 8, 11);
+        CoffeeMaker1 = new Machines.CoffeeMaker("CoffeeMaker1", 1, 6, 11);
+        CoffeeMaker2 = new Machines.CoffeeMaker("CoffeeMaker2", 2, 7, 11);
+        CoffeeMaker3 = new Machines.CoffeeMaker("CoffeeMaker3", 3, 8, 11);
         Pastry1 = new Machines.PastryMaker("Pastry1", 7, 9);
-        Oven1 = new Machines.Oven("Oven1", 1, new int[]{15, 16, 27, 28}, 12, 11);
-        Oven2 = new Machines.Oven("Oven2", 2, new int[]{17, 18, 29, 30}, 14, 11);
+        Oven1 = new Machines.Oven("Oven1", 1, 12, 11);
+        Oven2 = new Machines.Oven("Oven2", 2, 14, 11);
         machinesList = new Machines.Machine[]{CoffeeMaker1, CoffeeMaker2, CoffeeMaker3, Pastry1, Oven1, Oven2};
 
         // For collision detection
@@ -178,7 +166,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Initialize or update BGM
         if (bgm == null) {
-            bgm = Gdx.audio.newMusic(Gdx.files.internal("sounds/bgm.mp3"));
+            bgm = Gdx.audio.newMusic(Gdx.files.internal("sfx/bgm.mp3"));
             bgm.setLooping(true);
             if (!mute) bgm.setVolume(0.2f);
             bgm.play();
@@ -271,6 +259,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (occupiedSeats != null) {
             occupiedSeats.clear();
         }
+        Machines.dispose();
         // Don't dispose batch here as it's needed for menu rendering
     }
 
@@ -292,7 +281,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
 
         float delta = Gdx.graphics.getDeltaTime();
-        
+
         // Update customer states and handle lost patience
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (customer.hasLostPatience()) {
@@ -325,7 +314,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Render map and character
         camera.update();
-        int[] foregroundIndices = {3, 4, 14, 15, 16, 28, 32, 33, 34};
+        int[] foregroundIndices = {3, 4, 13, 14, 15, 27, 31, 32, 33};
 
         // Create an array for background layers (everything except the foreground one)
         ArrayList<Integer> backgroundLayerIndices = new ArrayList<>();
@@ -370,18 +359,18 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Draw character
         batch.draw(currentFrame, characterPosition.x, characterPosition.y,
-            currentFrame.getRegionWidth() * CHARACTER_SCALE,
-            currentFrame.getRegionHeight() * CHARACTER_SCALE);
+                currentFrame.getRegionWidth() * CHARACTER_SCALE,
+                currentFrame.getRegionHeight() * CHARACTER_SCALE);
 
         // Draw customers
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (customer.sprite != null) {
                 batch.draw(
-                    customer.sprite,
-                    customer.position.x,
-                    customer.position.y,
-                    customer.sprite.getRegionWidth() * UNIT_SCALE,
-                    customer.sprite.getRegionHeight() * UNIT_SCALE
+                        customer.sprite,
+                        customer.position.x,
+                        customer.position.y,
+                        customer.sprite.getRegionWidth() * UNIT_SCALE,
+                        customer.sprite.getRegionHeight() * UNIT_SCALE
                 );
             }
         }
@@ -396,7 +385,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (inventory != null) {
             inventory.render(batch);
         }
-        
+
         batch.end();
 
         for (int index : foregroundIndices) {
@@ -525,36 +514,23 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         nearMachine = false;
         nearMachineType = null;
 
-        nearMachineType = checkForSpecificMachine(characterTileX, characterTileY, 2, "coffee_maker");
+        nearMachineType = Machines.checkForSpecificMachine(tiledMap, characterTileX, characterTileY, 1, "oven");
         if (nearMachineType != null) {
             nearMachine = true;
             return;
         }
 
-        nearMachineType = checkForSpecificMachine(characterTileX, characterTileY, 1, "oven");
+        nearMachineType = Machines.checkForSpecificMachine(tiledMap, characterTileX, characterTileY, 2, "coffee_maker");
         if (nearMachineType != null) {
             nearMachine = true;
             return;
         }
 
-        nearMachineType = checkForSpecificMachine(characterTileX, characterTileY, 1, "pastry");
+        nearMachineType = Machines.checkForSpecificMachine(tiledMap, characterTileX, characterTileY, 2, "pastry");
         if (nearMachineType != null) {
             nearMachine = true;
             return;
         }
-    }
-
-    /* Please remove checkMachineTypeAtExact and make it just get machineType of machine*/
-    private String checkForSpecificMachine(int centerX, int centerY, int radius, String machineType) {
-        for (int y = centerY - radius; y <= centerY + radius; y++) {
-            for (int x = centerX - radius; x <= centerX + radius; x++) {
-                String foundType = Machines.checkMachineTypeAtExact(tiledMap, x, y);
-                if (foundType != null && foundType.equals(machineType)) {
-                    return foundType;
-                }
-            }
-        }
-        return null;
     }
 
     /* Shows options of machine if near and clicked */
@@ -594,7 +570,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (keycode == Input.Keys.ESCAPE) {
             isMenuActive = !isMenuActive;
             isPaused = isMenuActive;
-            
+
             // Pause/resume all machines
             for (Machines.Machine machine : machinesList) {
                 if (isPaused) {
@@ -654,7 +630,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 String machineType = machine.machineType;
                 for (int y = characterTileY - radius; y <= characterTileY + radius; y++) {
                     for (int x = characterTileX - radius; x <= characterTileX + radius; x++) {
-                        String foundType = Machines.checkMachineTypeAtExact(tiledMap, x, y);
+                        String foundType = Machines.checkForSpecificMachine(tiledMap, x, y, radius, machineType);
                         if (foundType != null && foundType.equals(machineType)) {
                             // Try to collect the order
                             if (inventory.addOrder(machine.choice)) {
@@ -708,18 +684,18 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                     if (inventory.serveOrder(customerOrder)) {
                         // Order successfully served
                         orderHandling.completeOrder(customer);
-                        
+
                         // Free up the seat
                         if (customer.currentSeatId != -1) {
                             occupiedSeats.remove(customer.currentSeatId);
                         }
-                        
+
                         // Remove the served customer completely
                         customerHandler.removeCustomer(customer);
-                        
+
                         // Enable random spawning of new customer
                         customerHandler.customerServed();
-                        
+
                         System.out.println("Successfully served customer!");
                     }
                 }
@@ -736,46 +712,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         Machines.handleOptionsHover(tiledMap, tileX, tileY, machinesList);
         return false;
-    }
-
-    private void handleOptionClick(int tileX, int tileY, Machines.Machine[] machines, TiledMap tiledMap) {
-        boolean processed = false;
-
-        // Handle normal machine interaction
-        for (Machines.Machine machine : machines) {
-            if (machine.isBusy) {
-                System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
-                continue;
-            }
-
-            TiledMapTileLayer optionsLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.optionsLayer);
-            if (optionsLayer == null || !optionsLayer.isVisible()) continue;
-
-            TiledMapTileLayer.Cell cell = optionsLayer.getCell(tileX, tileY);
-
-            if (cell != null && cell.getTile() != null) {
-                String order = cell.getTile().getProperties().get("order", String.class);
-
-                if (order != null) {
-                    boolean started = machine.startProcess(tiledMap, cell);
-
-                    if (started) {
-                        System.out.println("Started " + machine.name + " (ID: " + machine.machineId + ") with order: " + order);
-                        machine.hideOptions();
-                        processed = true;
-                        break;
-                    } else {
-                        System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy.");
-                    }
-                } else {
-                    System.out.println("No 'order' property found on the clicked tile.");
-                }
-            }
-        }
-
-        if (!processed) {
-            System.out.println("No available machine to process the order.");
-        }
     }
 
     @Override
@@ -806,22 +742,22 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
                             // Check if dropped near seat center
                             if (Math.abs(clickedPosition.x - seatCenterX) < 32 &&
-                                Math.abs(clickedPosition.y - seatCenterY) < 32) {
+                                    Math.abs(clickedPosition.y - seatCenterY) < 32) {
 
                                 // Snap to seat center
                                 customer.position.set(
-                                    seatCenterX - 30,
-                                    seatCenterY
+                                        seatCenterX - 30,
+                                        seatCenterY
                                 );
-                                
+
                                 // Reset customer state and properly seat them
                                 customer.stopAllTimers();
                                 customerHandler.seatCustomer(customer);
-                                
+
                                 // Mark seat as occupied
                                 occupiedSeats.put(seatId, customer);
                                 customer.currentSeatId = seatId;
-                                
+
                                 int randomOrder = MathUtils.random(orderHandling.getMenuItems().length - 1);
                                 orderHandling.addOrder(seat, randomOrder, customer);
 
@@ -873,8 +809,8 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             if (!customer.isSeated && customerClicked(customer, worldPosition)) {
                 customer.beingDragged = true;
                 customer.offset.set(
-                    clickedPosition.x - customer.position.x,
-                    clickedPosition.y - customer.position.y
+                        clickedPosition.x - customer.position.x,
+                        clickedPosition.y - customer.position.y
                 );
                 return true;
             }
@@ -883,7 +819,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         Vector2 worldCoords = viewport.unproject(new Vector2(screenX, screenY));
         int tileX = (int) (worldCoords.x / (16 * UNIT_SCALE));
         int tileY = (int) (worldCoords.y / (16 * UNIT_SCALE));
-        handleOptionClick(tileX, tileY, machinesList, tiledMap);
+        Machines.handleOptionClick(tileX, tileY, machinesList, tiledMap);
 
         return true;
     }
@@ -892,13 +828,13 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(clickedPosition);
-        
+
         // Update position for the customer being dragged
         for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
             if (customer.beingDragged) {
                 customer.position.set(
-                    clickedPosition.x - customer.offset.x, 
-                    clickedPosition.y - customer.offset.y
+                        clickedPosition.x - customer.offset.x,
+                        clickedPosition.y - customer.offset.y
                 );
                 return true;
             }
@@ -913,10 +849,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private boolean customerClicked(CustomerHandler.Customer customer, Vector2 worldPosition) {
         float width = 16 * UNIT_SCALE;
         float height = 16 * UNIT_SCALE;
-        return worldPosition.x >= customer.position.x && 
-               worldPosition.x <= customer.position.x + width &&
-               worldPosition.y >= customer.position.y && 
-               worldPosition.y <= customer.position.y + height;
+        return worldPosition.x >= customer.position.x &&
+                worldPosition.x <= customer.position.x + width &&
+                worldPosition.y >= customer.position.y &&
+                worldPosition.y <= customer.position.y + height;
     }
 
 

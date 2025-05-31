@@ -1,6 +1,7 @@
 package com.caferush.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,8 +11,9 @@ import com.caferush.game.CustomerHandler.Customer;
 
 public class OrderHandling {
 
+    static Sound meow = Gdx.audio.newSound(Gdx.files.internal("sfx/meow.mp3"));
     private static final int[][] menu_items = {
-            {64,   0, 16, 16}, // hot choco
+            {64,  0, 16, 16}, // hot choco
             {16,  0, 16, 16},  // espresso
             {32,  0, 16, 16},  // americano
             {16, 64, 16, 16},  // bread
@@ -192,6 +194,7 @@ public class OrderHandling {
 
     // Complete an order for a customer
     public void completeOrder(Customer customer) {
+        meow.play();
         OrderPosition orderToRemove = null;
         for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
             if (entry.value.customer == customer) {
@@ -209,5 +212,6 @@ public class OrderHandling {
         menuSheet.dispose();
         speechBubbleModerate.dispose();
         speechBubbleMinimal.dispose();
+        meow.dispose();
     }
 }

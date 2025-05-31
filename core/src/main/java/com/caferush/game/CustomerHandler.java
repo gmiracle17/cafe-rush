@@ -11,16 +11,16 @@ import com.badlogic.gdx.utils.Array;
 
 public class CustomerHandler {
     public Array<Customer> customers;
-    private Array<Texture> characterSprites;
-    private Array<TextureRegion> customerSprites;
-    private OrderHandling orderHandling;
+    private final Array<Texture> characterSprites;
+    private final Array<TextureRegion> customerSprites;
+    private final OrderHandling orderHandling;
 
     // Spawn point patience bubble textures
     private Texture spawnBubbleNormal;
     private Texture spawnBubbleModerate;
     private Texture spawnBubbleMinimal;
 
-    private CustomerSpawner spawnerThread;
+    private final CustomerSpawner spawnerThread;
     private volatile boolean isRunning = true;
     private final Object customersLock = new Object();
 
@@ -32,8 +32,8 @@ public class CustomerHandler {
     public float spawnY = 210;
     private volatile boolean canSpawnNewCustomer = true;
 
-    static Sound meow = Gdx.audio.newSound(Gdx.files.internal("sounds/meow.mp3"));
-    static Sound angrymeow = Gdx.audio.newSound(Gdx.files.internal("sounds/angry-meow.mp3"));
+    static Sound angryMeow = Gdx.audio.newSound(Gdx.files.internal("sfx/angry-meow.mp3"));
+    static Sound pop = Gdx.audio.newSound(Gdx.files.internal("sfx/pop-39222.mp3"));
 
     public CustomerHandler(OrderHandling orderHandling) {
         this.orderHandling = orderHandling;
@@ -62,8 +62,8 @@ public class CustomerHandler {
         int spriteWidth = 16;
         int spriteHeight = 16;
 
-        customerSprites.add(new TextureRegion(catBlackSheet, 0*16, 0*16, spriteWidth, spriteHeight));
-        customerSprites.add(new TextureRegion(catOrangeSheet, 0*16, 0*16, spriteWidth, spriteHeight));
+        customerSprites.add(new TextureRegion(catBlackSheet, 0, 0, spriteWidth, spriteHeight));
+        customerSprites.add(new TextureRegion(catOrangeSheet, 0, 0, spriteWidth, spriteHeight));
 
         // Load spawn patience bubble textures
         loadSpawnBubbleTextures();
@@ -136,12 +136,13 @@ public class CustomerHandler {
                 Customer customer = customers.get(i);
                 if (customer.hasLostPatience()) {
                     removeCustomer(customer);
+                    long soundAngryMeow = angryMeow.play();
                     if (customer.isSeated) {
                         System.out.println("Seated customer lost patience waiting for order!");
-                        angrymeow.play();
+                        angryMeow.setVolume(soundAngryMeow, 0.2f);
                     } else {
                         System.out.println("Customer lost patience waiting to be seated!");
-                        angrymeow.play();
+                        angryMeow.setVolume(soundAngryMeow, 0.2f);
                     }
                 }
             }
@@ -220,7 +221,9 @@ public class CustomerHandler {
                             isSpawnPointClear(spawnX, spawnY) && 
                             canSpawnNewCustomer && 
                             isRunning) {
-                            
+
+                            long soundPop = pop.play();
+                            pop.setVolume(soundPop, 0.8f);
                             addCustomer(spawnX, spawnY);
                             System.out.println("Spawned new customer. Total customers: " + customers.size);
                             
@@ -454,6 +457,8 @@ public class CustomerHandler {
         if (spawnBubbleNormal != null) spawnBubbleNormal.dispose();
         if (spawnBubbleModerate != null) spawnBubbleModerate.dispose();
         if (spawnBubbleMinimal != null) spawnBubbleMinimal.dispose();
+        angryMeow.dispose();
+        pop.dispose();
     }
 
     public void customerServed() {

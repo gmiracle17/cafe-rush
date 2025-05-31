@@ -55,11 +55,11 @@ public class GameControls {
 
         layout = new GlyphLayout();
 
-        leaveButtonTexture = new Texture(Gdx.files.internal("leave.png"));
-        helpButtonTexture = new Texture(Gdx.files.internal("help.png"));
-        pauseButtonTexture = new Texture(Gdx.files.internal("pause.png"));
-        soundOnButtonTexture = new Texture(Gdx.files.internal("soundon.png"));
-        soundOffButtonTexture = new Texture(Gdx.files.internal("soundoff.png"));
+        leaveButtonTexture = new Texture(Gdx.files.internal("buttons/leave.png"));
+        helpButtonTexture = new Texture(Gdx.files.internal("buttons/help.png"));
+        pauseButtonTexture = new Texture(Gdx.files.internal("buttons/pause.png"));
+        soundOnButtonTexture = new Texture(Gdx.files.internal("buttons/sound-on.png"));
+        soundOffButtonTexture = new Texture(Gdx.files.internal("buttons/sound-off.png"));
 
         int buttonWidth = 100;
         int buttonHeight = 60;
