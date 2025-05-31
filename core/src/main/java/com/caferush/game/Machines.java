@@ -24,7 +24,6 @@ public class Machines {
         protected volatile boolean isPaused = false;
         protected volatile long remainingTime = 0;
 
-        protected String machineLayer;
         protected String machineType;
         protected String optionsLayer;
         protected String optionsBoxLayer;
