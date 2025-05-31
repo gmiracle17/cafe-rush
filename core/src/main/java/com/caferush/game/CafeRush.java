@@ -35,6 +35,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private GameMenu gameMenu;
     private GameControls gameControls;
     private Instructions instructions;
+    private GameStatus gameStatus;
     private boolean isMenuActive = true;
     private boolean isInstructionsActive = false;
     private boolean isPaused = false;
@@ -47,7 +48,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private float soundVolume = 0.5f;
 
     private static final float VIRTUAL_WIDTH = 1000;
-    private static final float VIRTUAL_HEIGHT = 750;
+    private static final float VIRTUAL_HEIGHT = 800;
     private static final float CHARACTER_SPEED = 200f;
     private static final float UNIT_SCALE = 4f;
     private static final float CHARACTER_HITBOX_REDUCTION = 0.5f;
@@ -90,22 +91,11 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private int currentEarnings = 0;
     private int earningGoal = 300;
     private int earningGoalIncrement = 50;
-    private float dayTimer = 500; // 3 minutes per day
+    private float dayTimer = 5; // 3 minutes per day
     private float currentDayTime = 180;
     private boolean isGameOver = false;
     private boolean isDayComplete = false;
     private BitmapFont font;
-
-    private Texture gameOverMessage;
-    private Texture restartButton;
-    private float restartButtonX, restartButtonY;
-    private float restartButtonWidth, restartButtonHeight;
-
-    private Texture youwonMessage;
-    private Texture continueButton;
-    private float continueButtonX, continueButtonY;
-    private float continueButtonWidth, continueButtonHeight;
-    private Rectangle restartButtonBounds;
 
     @Override
     public void create() {
@@ -128,7 +118,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             camera = new OrthographicCamera();
         }
         if (viewport == null) {
-            viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT + 75, camera);
+            viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
         }
         viewport.apply();
 
@@ -141,13 +131,13 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         // Set up camera position based on map dimensions
         int mapWidth = tiledMap.getProperties().get("width", Integer.class);
-        int mapHeight = tiledMap.getProperties().get("height", Integer.class) - 1;
+        int mapHeight = tiledMap.getProperties().get("height", Integer.class);
         int tileWidth = tiledMap.getProperties().get("tilewidth", Integer.class);
         int tileHeight = tiledMap.getProperties().get("tileheight", Integer.class);
 
         float mapPixelWidth = mapWidth * tileWidth * UNIT_SCALE;
         float mapPixelHeight = mapHeight * tileHeight * UNIT_SCALE;
-        camera.position.set(mapPixelWidth / 2f, mapPixelHeight / 2f, 0);
+        camera.position.set(mapPixelWidth / 2f, mapPixelHeight / 2f - 50f, 0);
         camera.update();
 
         // Load character textures
@@ -217,19 +207,16 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             gameControls = new GameControls(createControlsListener());
         }
 
+        if (gameStatus == null) {
+            gameStatus = new GameStatus(createStatusListener());
+        }
+
         // Initialize day-related variables
         currentDay = 1;
         currentEarnings = 0;
         earningGoal = 300;
         currentDayTime = dayTimer;
         isGameOver = false;
-
-        // For game over message
-        gameOverMessage = new Texture("pngs/gameover message.png"); 
-        restartButton = new Texture("pngs/restart.png");
-
-        youwonMessage = new Texture("pngs/congratulations message.png"); 
-        continueButton = new Texture("pngs/continue.png");
 
         loadSounds();
     }
@@ -255,8 +242,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             occupiedSeats.clear();
         }
         Machines.dispose();
-        gameOverMessage.dispose();
-        restartButton.dispose();
+        gameStatus.dispose();
         // Don't dispose batch here as it's needed for menu rendering
     }
 
@@ -276,7 +262,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         // Update day timer if game is running
         if (!isMenuActive && !isInstructionsActive && !isPaused && !isGameOver && !isDayComplete) {
             currentDayTime -= delta;
-            
+
             // Check if day is over
             if (currentDayTime <= 0) {
                 endDay();
@@ -319,10 +305,15 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return;
         }
 
+        if (isDayComplete || isGameOver) {
+            gameStatus.render(batch);
+            return;
+        }
+
         // Game is running - show controls
         camera.update();
         batch.setProjectionMatrix(camera.combined);
-        
+
         // Define foreground layers
         int[] foregroundIndices = {3, 4, 13, 14, 15, 27, 31, 32, 33};
 
@@ -437,61 +428,23 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             // Use screen coordinates for UI
             batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
             font.setColor(Color.BLACK);
-            
+
             // Left side of inventory: Day and Time
-            font.draw(batch, "Day: " + currentDay, INVENTORY_X - 250, INVENTORY_Y + 55);
-            
+            font.draw(batch, "Day: " + currentDay, INVENTORY_X - 250, INVENTORY_Y + 65);
+
             // Format time
             int minutes = (int)(currentDayTime / 60);
             int seconds = (int)(currentDayTime % 60);
             String timeText = String.format("Time: %02d:%02d", minutes, seconds);
-            font.draw(batch, timeText, INVENTORY_X - 253, INVENTORY_Y + 27);
-            
+            font.draw(batch, timeText, INVENTORY_X - 253, INVENTORY_Y + 40);
+
             // Right side of inventory: Earnings on two lines
             float inventoryEndX = INVENTORY_X + (32 * 8 * 1.5f);  // Right edge of inventory
             font.draw(batch, "Earnings: " + currentEarnings,
-                     inventoryEndX + 90, INVENTORY_Y + 55);
+                    inventoryEndX + 90, INVENTORY_Y + 65);
             font.draw(batch, "Goal: " + earningGoal,
-                     inventoryEndX + 90, INVENTORY_Y + 27);
+                    inventoryEndX + 90, INVENTORY_Y + 40);
             batch.end();
-        }
-
-        if (isGameOver) {
-                batch.begin();
-                batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
-                
-                batch.draw(gameOverMessage, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-                    
-                restartButtonWidth = 300;
-                restartButtonHeight = 200;
-                restartButtonX = VIRTUAL_WIDTH/2 - restartButtonWidth/2;
-                restartButtonY = VIRTUAL_HEIGHT/2 - restartButtonWidth/2 - 80;
-                
-                restartButtonBounds = new Rectangle(restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight);
-                
-                batch.draw(restartButton, restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight);
-                batch.end();
-            }
-
-        if (isDayComplete) {
-                batch.begin();
-                batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
-                
-                batch.draw(youwonMessage,0,0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-                        
-                continueButtonWidth = 400;
-                continueButtonHeight = 300;
-                continueButtonX = VIRTUAL_WIDTH/2 - continueButtonWidth/2f;
-                continueButtonY = VIRTUAL_HEIGHT/2 - continueButtonHeight/2f - 50;
-                batch.draw(continueButton, continueButtonX, continueButtonY, continueButtonWidth, continueButtonHeight);
-
-                batch.end();
-            }
-    }
-
-    private void playButtonSound() {
-        if (buttonClickSound != null) {
-            buttonClickSound.play(soundVolume);
         }
     }
 
@@ -649,6 +602,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (instructions != null) instructions.dispose();
         if (gameControls != null) gameControls.dispose();
         if (font != null) font.dispose();
+        if (gameStatus != null) gameStatus.dispose();
     }
 
     @Override
@@ -775,7 +729,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                     // Calculate earnings based on customer patience
                     int earnings = calculateEarnings(customer);
                     currentEarnings += earnings;
-                    
+
                     // Complete the order and handle customer
                     orderHandling.completeOrder(customer);
                     if (customer.currentSeatId != -1) {
@@ -891,38 +845,13 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             }
         }
 
-        if (button != Input.Buttons.LEFT) {
-            return false;
-        }
-
-        if (isGameOver) {
-            playButtonSound();
-            Vector3 buttonClick = new Vector3(screenX, screenY, 0);
-            camera.unproject(buttonClick);
-
-            float virtualX = (buttonClick.x / camera.viewportWidth) * VIRTUAL_WIDTH;
-            float virtualY = (buttonClick.y / camera.viewportHeight) * VIRTUAL_HEIGHT;
-
-            if (restartButtonBounds.contains(virtualX, virtualY)) {
-                isGameOver = false;
-                createMenuListener().onStartGame(); 
-                return true;
-            }
-            return false;
-        }
-
         if (isDayComplete) {
-            playButtonSound();
-            Vector3 buttonClick = new Vector3(screenX, screenY, 0);
-            camera.unproject(buttonClick);
-
-            // Check if click is within continue button bounds
-            if (buttonClick.x >= continueButtonX && buttonClick.x <= continueButtonX + continueButtonWidth &&
-                buttonClick.y >= continueButtonY && buttonClick.y <= continueButtonY + continueButtonHeight) {
-                
-                nextDay();
+            if (gameStatus.touchDown(screenX, screenY)) {
                 return true;
             }
+        }
+
+        if (button != Input.Buttons.LEFT) {
             return false;
         }
 
@@ -1088,44 +1017,83 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         };
     }
 
-    
-private void endDay() {
-    if (currentEarnings >= earningGoal) {
-        isDayComplete = true;  
-        isPaused = true;       
-        
-        // Stop the day timer to prevent further updates
-        currentDayTime = 0;
-        
-        // Pause all systems
-        for (Machines.Machine machine : machinesList) {
-            machine.pauseProcess();
-        }
-        if (customerHandler != null) {
-            customerHandler.stopSpawning();
-            customerHandler.pauseAllCustomerTimers();
-        }
-        
-    } else {
-        isGameOver = true;
-        isPaused = true;
-        
-        // Stop the day timer
-        currentDayTime = 0;
-        
-        if (customerHandler != null) {
-            customerHandler.stopSpawning();
-            customerHandler.pauseAllCustomerTimers();
+    private GameStatus.StatusListener createStatusListener() {
+        return new GameStatus.StatusListener() {
+            @Override
+            public void onStartGame() {
+                disposeGameResources();
+                initializeGame();
+                Machines.initializeSounds();
+            }
+
+            @Override
+            public void onResumeGame() {
+                isPaused = false;
+                // Resume all machines
+                for (Machines.Machine machine : machinesList) {
+                    machine.resumeProcess();
+                }
+                // Resume customer spawning and timers
+                if (customerHandler != null) {
+                    customerHandler.resumeSpawning();
+                    customerHandler.resumeAllCustomerTimers();
+                }
+            }
+            @Override
+            public void onBackToMenu(){
+                isMenuActive = true;
+                isPaused = true;
+                // Pause all systems when leaving game
+                for (Machines.Machine machine : machinesList) {
+                    machine.pauseProcess();
+                }
+                if (customerHandler != null) {
+                    customerHandler.stopSpawning();
+                    customerHandler.pauseAllCustomerTimers();
+                }
+            }
+        };
+    }
+
+    private void endDay() {
+        if (currentEarnings >= earningGoal) {
+            isDayComplete = true;
+            isPaused = true;
+
+            gameStatus.setGameOver(false);
+            // Stop the day timer to prevent further updates
+            currentDayTime = 0;
+
+            // Pause all systems
+            for (Machines.Machine machine : machinesList) {
+                machine.pauseProcess();
+            }
+            if (customerHandler != null) {
+                customerHandler.stopSpawning();
+                customerHandler.pauseAllCustomerTimers();
+            }
+
+        } else {
+            isGameOver = true;
+            isPaused = true;
+
+            gameStatus.setGameOver(true);
+            // Stop the day timer
+            currentDayTime = 0;
+
+            if (customerHandler != null) {
+                customerHandler.stopSpawning();
+                customerHandler.pauseAllCustomerTimers();
+            }
         }
     }
-}
 
     private void nextDay() {
         currentDay++;
         currentEarnings = 0;
         earningGoal += earningGoalIncrement;
         currentDayTime = dayTimer;
-        
+
         if (customerHandler != null) {
             customerHandler.stopSpawning();
             for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
@@ -1136,21 +1104,21 @@ private void endDay() {
                 customerHandler.removeCustomer(customer);
             }
             occupiedSeats.clear();
-            
+
             for (Machines.Machine machine : machinesList) {
                 machine.isBusy = false;
                 machine.orderReady = false;
             }
-            
+
             customerHandler.startSpawning();
         }
-        
+
         characterPosition.set(757, 512);
         currentAnimation = walkDown;
-        
+
         isDayComplete = false;
         isPaused = false;
-        
+
         for (Machines.Machine machine : machinesList) {
             machine.resumeProcess();
         }
@@ -1158,7 +1126,7 @@ private void endDay() {
             customerHandler.resumeSpawning();
             customerHandler.resumeAllCustomerTimers();
         }
-}
+    }
 
     private void clearOrderDisplaysForSeat(int seatId) {
         // Find and clear cells related to this seat
@@ -1172,7 +1140,7 @@ private void endDay() {
                         // Get seat position
                         int tileX = (int)(seat.getX() * UNIT_SCALE / (16 * UNIT_SCALE));
                         int tileY = (int)(seat.getY() * UNIT_SCALE / (16 * UNIT_SCALE));
-                        
+
                         // Clear cells in a larger area around the seat position (7x7 area)
                         for (int x = tileX - 3; x <= tileX + 3; x++) {
                             for (int y = tileY - 3; y <= tileY + 3; y++) {
@@ -1206,10 +1174,10 @@ private void endDay() {
         if (customer.currentSeatId != -1) {
             // Remove from occupied seats
             occupiedSeats.remove(customer.currentSeatId);
-            
+
             // Remove their order and display
             orderHandling.completeOrder(customer);
-            
+
             // Make sure to remove from the customer handler's list
             customerHandler.removeCustomer(customer);
         }

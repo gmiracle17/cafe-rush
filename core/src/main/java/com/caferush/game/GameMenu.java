@@ -34,7 +34,6 @@ public class GameMenu {
     private final MenuListener listener;
 
     private Sound buttonClickSound;
-    private float soundVolume = 0.5f;
 
     public GameMenu(MenuListener listener) {
         this.listener = listener;
@@ -99,6 +98,7 @@ public class GameMenu {
 
     private void playButtonSound() {
         if (buttonClickSound != null) {
+            float soundVolume = 0.5f;
             buttonClickSound.play(soundVolume);
         }
     }

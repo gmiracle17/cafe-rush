@@ -46,7 +46,7 @@ public class Instructions {
         // Position buttons centered horizontally at the bottom
         int buttonWidth = 400;
         int buttonHeight = 100;
-        resumeButtonPosition = new Vector2((screenWidth - buttonWidth) / 2f, 20f);
+        resumeButtonPosition = new Vector2((screenWidth - buttonWidth) / 2f, 70f);
         resumeButtonBounds = new Rectangle(resumeButtonPosition.x, resumeButtonPosition.y, buttonWidth, buttonHeight);
     }
 
