@@ -158,15 +158,15 @@ public class CustomerHandler {
 
     // Method to render spawn point patience bubbles
     public void renderSpawnPatience(SpriteBatch batch, float UNIT_SCALE) {
-        synchronized(customersLock) {
-            for (Customer customer : customers) {
-                // Show bubble for any customer not seated (whether in spawn or being dragged)
-                if (!customer.isSeated) {
-                    renderCustomerSpawnBubble(batch, customer, UNIT_SCALE);
-                }
+    synchronized(customersLock) {
+        for (int i = 0; i < customers.size; i++) {
+            Customer customer = customers.get(i);
+            if (!customer.isSeated) {
+                renderCustomerSpawnBubble(batch, customer, UNIT_SCALE);
             }
         }
     }
+}
 
     private void renderCustomerSpawnBubble(SpriteBatch batch, Customer customer, float UNIT_SCALE) {
         float bubbleScale = 1.5f;
@@ -202,13 +202,14 @@ public class CustomerHandler {
     }
 
     private boolean isSpawnPointClear(float x, float y) {
-        for (Customer customer : customers) {
-            if (customer.position.dst(x, y) < SPAWN_RADIUS) {
-                return false;
-            }
+    for (int i = 0; i < customers.size; i++) {
+        Customer customer = customers.get(i);
+        if (customer.position.dst(x, y) < SPAWN_RADIUS) {
+            return false;
         }
-        return true;
     }
+    return true;
+}
 
     private class CustomerSpawner extends Thread {
         @Override

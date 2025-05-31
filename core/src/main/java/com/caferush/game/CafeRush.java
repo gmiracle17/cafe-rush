@@ -2,6 +2,7 @@ package com.caferush.game;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,6 +20,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -40,6 +42,9 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private Music bgm;
     private boolean mute = false;
+
+    private Sound buttonClickSound;
+    private float soundVolume = 0.5f;
 
     private static final float VIRTUAL_WIDTH = 1000;
     private static final float VIRTUAL_HEIGHT = 750;
@@ -85,10 +90,22 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private int currentEarnings = 0;
     private int earningGoal = 300;
     private int earningGoalIncrement = 50;
-    private float dayTimer = 90; // 3 minutes per day
+    private float dayTimer = 500; // 3 minutes per day
     private float currentDayTime = 180;
     private boolean isGameOver = false;
+    private boolean isDayComplete = false;
     private BitmapFont font;
+
+    private Texture gameOverMessage;
+    private Texture restartButton;
+    private float restartButtonX, restartButtonY;
+    private float restartButtonWidth, restartButtonHeight;
+
+    private Texture youwonMessage;
+    private Texture continueButton;
+    private float continueButtonX, continueButtonY;
+    private float continueButtonWidth, continueButtonHeight;
+    private Rectangle restartButtonBounds;
 
     @Override
     public void create() {
@@ -206,6 +223,15 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         earningGoal = 300;
         currentDayTime = dayTimer;
         isGameOver = false;
+
+        // For game over message
+        gameOverMessage = new Texture("pngs/gameover message.png"); 
+        restartButton = new Texture("pngs/restart.png");
+
+        youwonMessage = new Texture("pngs/congratulations message.png"); 
+        continueButton = new Texture("pngs/continue.png");
+
+        loadSounds();
     }
 
     private void disposeGameResources() {
@@ -229,7 +255,17 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             occupiedSeats.clear();
         }
         Machines.dispose();
+        gameOverMessage.dispose();
+        restartButton.dispose();
         // Don't dispose batch here as it's needed for menu rendering
+    }
+
+    private void loadSounds() {
+        try {
+            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("sfx/buttonclick3.mp3"));
+        } catch (Exception e) {
+            System.err.println("Error loading sound files: " + e.getMessage());
+        }
     }
 
     @Override
@@ -238,7 +274,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         stateTime += delta;
 
         // Update day timer if game is running
-        if (!isMenuActive && !isInstructionsActive && !isPaused && !isGameOver) {
+        if (!isMenuActive && !isInstructionsActive && !isPaused && !isGameOver && !isDayComplete) {
             currentDayTime -= delta;
             
             // Check if day is over
@@ -421,15 +457,41 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
 
         if (isGameOver) {
-            batch.begin();
-            // Use screen coordinates for game over text
-            batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
-            font.setColor(Color.RED);
-            font.draw(batch, "GAME OVER! You didn't reach the earning goal!", 
-                     VIRTUAL_WIDTH/2 - 200, VIRTUAL_HEIGHT/2);
-            font.draw(batch, "Press ENTER to return to main menu", 
-                     VIRTUAL_WIDTH/2 - 150, VIRTUAL_HEIGHT/2 - 50);
-            batch.end();
+                batch.begin();
+                batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+                
+                batch.draw(gameOverMessage, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+                    
+                restartButtonWidth = 300;
+                restartButtonHeight = 200;
+                restartButtonX = VIRTUAL_WIDTH/2 - restartButtonWidth/2;
+                restartButtonY = VIRTUAL_HEIGHT/2 - restartButtonWidth/2 - 80;
+                
+                restartButtonBounds = new Rectangle(restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight);
+                
+                batch.draw(restartButton, restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight);
+                batch.end();
+            }
+
+        if (isDayComplete) {
+                batch.begin();
+                batch.setProjectionMatrix(batch.getProjectionMatrix().setToOrtho2D(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+                
+                batch.draw(youwonMessage,0,0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+                        
+                continueButtonWidth = 400;
+                continueButtonHeight = 300;
+                continueButtonX = VIRTUAL_WIDTH/2 - continueButtonWidth/2f;
+                continueButtonY = VIRTUAL_HEIGHT/2 - continueButtonHeight/2f - 50;
+                batch.draw(continueButton, continueButtonX, continueButtonY, continueButtonWidth, continueButtonHeight);
+
+                batch.end();
+            }
+    }
+
+    private void playButtonSound() {
+        if (buttonClickSound != null) {
+            buttonClickSound.play(soundVolume);
         }
     }
 
@@ -833,6 +895,37 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return false;
         }
 
+        if (isGameOver) {
+            playButtonSound();
+            Vector3 buttonClick = new Vector3(screenX, screenY, 0);
+            camera.unproject(buttonClick);
+
+            float virtualX = (buttonClick.x / camera.viewportWidth) * VIRTUAL_WIDTH;
+            float virtualY = (buttonClick.y / camera.viewportHeight) * VIRTUAL_HEIGHT;
+
+            if (restartButtonBounds.contains(virtualX, virtualY)) {
+                isGameOver = false;
+                createMenuListener().onStartGame(); 
+                return true;
+            }
+            return false;
+        }
+
+        if (isDayComplete) {
+            playButtonSound();
+            Vector3 buttonClick = new Vector3(screenX, screenY, 0);
+            camera.unproject(buttonClick);
+
+            // Check if click is within continue button bounds
+            if (buttonClick.x >= continueButtonX && buttonClick.x <= continueButtonX + continueButtonWidth &&
+                buttonClick.y >= continueButtonY && buttonClick.y <= continueButtonY + continueButtonHeight) {
+                
+                nextDay();
+                return true;
+            }
+            return false;
+        }
+
         Vector3 clickedPosition = new Vector3(screenX, screenY, 0);
         camera.unproject(clickedPosition);
         Vector2 worldPosition = new Vector2(clickedPosition.x, clickedPosition.y);
@@ -995,66 +1088,77 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         };
     }
 
-    private void endDay() {
-        if (currentEarnings >= earningGoal) {
-            // Advance to next day
-            currentDay++;
-            currentEarnings = 0;  // Reset earnings
-            earningGoal += earningGoalIncrement;
-            currentDayTime = dayTimer;
-            
-            // Reset game state for new day
-            // Clear all customers and their orders
-            if (customerHandler != null) {
-                customerHandler.stopSpawning();
-                for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-                    // Remove order displays/bubbles
-                    orderHandling.completeOrder(customer);  // This will remove the order
-                    if (customer.currentSeatId != -1) {
-                        occupiedSeats.remove(customer.currentSeatId);
-                    }
-                    customerHandler.removeCustomer(customer);
-                }
-                
-                // Clear all seats
-                occupiedSeats.clear();
-                
-                // Clear all machines
-                for (Machines.Machine machine : machinesList) {
-                    machine.isBusy = false;
-                    machine.orderReady = false;
-                    // Clear machine displays
-                    TiledMapTileLayer displayLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayLayer);
-                    if (displayLayer != null && displayLayer.getCell(machine.displayX, machine.displayY) != null) {
-                        displayLayer.getCell(machine.displayX, machine.displayY).setTile(null);
-                    }
-                    // Hide status boxes
-                    String[] colors = {" Green ", " Yellow ", " Red "};
-                    for (String color : colors) {
-                        TiledMapTileLayer boxLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayBoxLayer + color + machine.machineId);
-                        if (boxLayer != null) {
-                            boxLayer.setVisible(false);
-                        }
-                    }
-                }
-
-                customerHandler.startSpawning();  // Restart customer spawning
-            }
-            
-            // Reset character position to starting position
-            characterPosition.set(757, 512);
-            currentAnimation = walkDown;
-            
-        } else {
-            // Game Over
-            isGameOver = true;
-            isPaused = true;
-            if (customerHandler != null) {
-                customerHandler.stopSpawning();
-                customerHandler.pauseAllCustomerTimers();
-            }
+    
+private void endDay() {
+    if (currentEarnings >= earningGoal) {
+        isDayComplete = true;  
+        isPaused = true;       
+        
+        // Stop the day timer to prevent further updates
+        currentDayTime = 0;
+        
+        // Pause all systems
+        for (Machines.Machine machine : machinesList) {
+            machine.pauseProcess();
+        }
+        if (customerHandler != null) {
+            customerHandler.stopSpawning();
+            customerHandler.pauseAllCustomerTimers();
+        }
+        
+    } else {
+        isGameOver = true;
+        isPaused = true;
+        
+        // Stop the day timer
+        currentDayTime = 0;
+        
+        if (customerHandler != null) {
+            customerHandler.stopSpawning();
+            customerHandler.pauseAllCustomerTimers();
         }
     }
+}
+
+    private void nextDay() {
+        currentDay++;
+        currentEarnings = 0;
+        earningGoal += earningGoalIncrement;
+        currentDayTime = dayTimer;
+        
+        if (customerHandler != null) {
+            customerHandler.stopSpawning();
+            for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+                orderHandling.completeOrder(customer);
+                if (customer.currentSeatId != -1) {
+                    occupiedSeats.remove(customer.currentSeatId);
+                }
+                customerHandler.removeCustomer(customer);
+            }
+            occupiedSeats.clear();
+            
+            for (Machines.Machine machine : machinesList) {
+                machine.isBusy = false;
+                machine.orderReady = false;
+            }
+            
+            customerHandler.startSpawning();
+        }
+        
+        characterPosition.set(757, 512);
+        currentAnimation = walkDown;
+        
+        isDayComplete = false;
+        isPaused = false;
+        
+        for (Machines.Machine machine : machinesList) {
+            machine.resumeProcess();
+        }
+        if (customerHandler != null) {
+            customerHandler.resumeSpawning();
+            customerHandler.resumeAllCustomerTimers();
+        }
+}
 
     private void clearOrderDisplaysForSeat(int seatId) {
         // Find and clear cells related to this seat
