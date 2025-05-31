@@ -35,6 +35,9 @@ pngs/Room_Builder_free_16x16.png
 pngs/cat-black-back.png
 pngs/cat-black-front.png
 pngs/cat-black-side.png
+pngs/cat-office-brown-front-idle.png
+pngs/cat-office-brown2-front-idle.png
+pngs/cat-office-white-front-idle.png
 pngs/cat-orange-back.png
 pngs/cat-orange-front.png
 pngs/cat-orange-side.png

@@ -96,10 +96,8 @@ public class Inventory {
 
     // Add an order to the inventory
     public boolean addOrder(String orderType) {
-        System.out.println("Attempting to add order: " + orderType); // Debug print
         int menuIndex = getMenuIndexForOrder(orderType);
         if (menuIndex == -1) {
-            System.out.println("Warning: Invalid order type: " + orderType);
             return false;
         }
         
@@ -107,11 +105,9 @@ public class Inventory {
         for (int i = 0; i < MAX_SLOTS; i++) {
             if (!slots.get(i).isOccupied()) {
                 slots.get(i).setOrder(orderType);
-                System.out.println("Added order " + orderType + " to slot " + i); // Debug print
                 return true;
             }
         }
-        System.out.println("Inventory is full, couldn't add: " + orderType); // Debug print
         return false; // Inventory is full
     }
 
@@ -237,7 +233,6 @@ public class Inventory {
             if (slot.isOccupied() && slot.getOrder().equals(orderType)) {
                 // Remove the order from inventory
                 removeOrder(i);
-                System.out.println("Served order: " + orderType);
                 return true;
             }
         }

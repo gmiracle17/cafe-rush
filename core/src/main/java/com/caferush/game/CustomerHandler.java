@@ -32,8 +32,8 @@ public class CustomerHandler {
     public float spawnY = 210;
     private volatile boolean canSpawnNewCustomer = true;
 
-    static Sound angryMeow = Gdx.audio.newSound(Gdx.files.internal("sfx/angry-meow.mp3"));
-    static Sound pop = Gdx.audio.newSound(Gdx.files.internal("sfx/pop-39222.mp3"));
+    private static Sound angryMeow;
+    private static Sound pop;
 
     public CustomerHandler(OrderHandling orderHandling) {
         this.orderHandling = orderHandling;
@@ -41,10 +41,24 @@ public class CustomerHandler {
         characterSprites = new Array<>();
         customerSprites = new Array<>();
         loadTextures();
+        loadSounds();
 
         spawnerThread = new CustomerSpawner();
         // Don't start the thread immediately
         isRunning = false;
+    }
+
+    private void loadSounds() {
+        try {
+            if (angryMeow == null) {
+                angryMeow = Gdx.audio.newSound(Gdx.files.internal("sfx/angry-meow.mp3"));
+            }
+            if (pop == null) {
+                pop = Gdx.audio.newSound(Gdx.files.internal("sfx/pop-39222.mp3"));
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading customer sounds: " + e.getMessage());
+        }
     }
 
     public Array<Customer> getCustomers() {
@@ -93,10 +107,10 @@ public class CustomerHandler {
             customer.maxWaitingforSeatTime = customer.getWaitingforSeatTime();
 
             customers.add(customer);
+            System.out.println("New customer arrived!");
 
             // Start spawn patience timer (not seated yet)
             customer.startWaitingforSeatTimer();
-            System.out.println("New customer spawned with patience time: " + customer.remainingPatienceTime);
         }
     }
 
@@ -107,7 +121,7 @@ public class CustomerHandler {
 
             // Clear the occupied seat if customer was seated
             if (customer.currentSeatId != -1) {
-
+                System.out.println("Customer left from seat " + customer.currentSeatId);
                 customer.currentSeatId = -1;
             }
 
@@ -131,9 +145,9 @@ public class CustomerHandler {
             customer.remainingWaitingforOrderTime = customer.getWaitingforOrderTime();
             customer.maxWaitingforOrderTime = customer.getWaitingforOrderTime();
             
+            System.out.println("Customer seated and ready to order!");
             // Start the order timer
             customer.startWaitingforOrderTimer();
-            System.out.println("Customer seated - switching to order patience timer");
         }
     }
 
@@ -145,10 +159,8 @@ public class CustomerHandler {
                     removeCustomer(customer);
                     long soundAngryMeow = angryMeow.play();
                     if (customer.isSeated) {
-                        System.out.println("Seated customer lost patience waiting for order!");
                         angryMeow.setVolume(soundAngryMeow, 0.2f);
                     } else {
-                        System.out.println("Customer lost patience waiting to be seated!");
                         angryMeow.setVolume(soundAngryMeow, 0.2f);
                     }
                 }
@@ -240,12 +252,10 @@ public class CustomerHandler {
                             long soundPop = pop.play();
                             pop.setVolume(soundPop, 0.8f);
                             addCustomer(spawnX, spawnY);
-                            System.out.println("Spawned new customer. Total customers: " + customers.size);
                             
                             // If we've reached max customers, stop spawning until a customer is served
                             if (customers.size >= maxCustomers) {
                                 canSpawnNewCustomer = false;
-                                System.out.println("Reached max customers, pausing spawns");
                             }
                         }
                     }
@@ -363,7 +373,6 @@ public class CustomerHandler {
 
                 spawnPatienceTimer = new CustomerPatienceTimer(this, patienceAtSpawn, "spawn");
                 spawnPatienceTimer.start();
-                System.out.println("Started spawn timer with patience: " + remainingPatienceTime);
             }
         }
 
@@ -387,7 +396,6 @@ public class CustomerHandler {
             
             seatedPatienceTimer = new CustomerPatienceTimer(this, remainingWaitingforOrderTime, "seated");
             seatedPatienceTimer.start();
-            System.out.println("Started order timer with time: " + remainingWaitingforOrderTime);
         }
 
         public void stopWaitingforOrderTimer() {
@@ -495,14 +503,21 @@ public class CustomerHandler {
         if (spawnBubbleNormal != null) spawnBubbleNormal.dispose();
         if (spawnBubbleModerate != null) spawnBubbleModerate.dispose();
         if (spawnBubbleMinimal != null) spawnBubbleMinimal.dispose();
-        angryMeow.dispose();
-        pop.dispose();
+        
+        // Dispose sounds
+        if (angryMeow != null) {
+            angryMeow.dispose();
+            angryMeow = null;
+        }
+        if (pop != null) {
+            pop.dispose();
+            pop = null;
+        }
     }
 
     public void customerServed() {
         // Allow spawning of new customers when one is served
         canSpawnNewCustomer = true;
-        System.out.println("Customer served, enabling new spawns");
     }
 
     // Add methods to control spawning

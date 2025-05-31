@@ -78,12 +78,10 @@ public class Machines {
         public boolean startProcess(TiledMap map, TiledMapTileLayer.Cell optionCell) {
             // Check if the current machine is busy
             if (isBusy) {
-                System.out.println(name + " is currently busy.");
                 return false;  // Skip if this machine is busy
             }
 
             this.choice = optionCell.getTile().getProperties().get("order", String.class);
-            System.out.println("Machine " + name + " starting process with order: " + this.choice);
             this.isBusy = true;
             this.map = map;
 
@@ -167,7 +165,6 @@ public class Machines {
             // Check if click is within the display area (with a slightly larger detection area)
             if (Math.abs(tileX - displayX) <= 1 && Math.abs(tileY - displayY) <= 1) {
                 if (inventory != null) {
-                    System.out.println("Attempting to collect order: " + choice + " from " + name); // Debug print
                     boolean added = inventory.addOrder(choice);
                     if (added) {
                         TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
@@ -181,8 +178,6 @@ public class Machines {
 
                         orderReady = false;
                         return true;
-                    } else {
-                        System.out.println("Inventory is full! Cannot collect " + choice);
                     }
                 }
             }
@@ -348,7 +343,6 @@ public class Machines {
         // Handle normal machine interaction
         for (Machines.Machine machine : machines) {
             if (machine.isBusy) {
-                System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy, skipping.");
                 continue;
             }
 
@@ -364,15 +358,10 @@ public class Machines {
                     boolean started = machine.startProcess(tiledMap, cell);
 
                     if (started) {
-                        System.out.println("Started " + machine.name + " (ID: " + machine.machineId + ") with order: " + order);
                         machine.hideOptions();
                         processed = true;
                         break;
-                    } else {
-                        System.out.println(machine.name + " (ID: " + machine.machineId + ") is busy.");
                     }
-                } else {
-                    System.out.println("No 'order' property found on the clicked tile.");
                 }
             }
         }

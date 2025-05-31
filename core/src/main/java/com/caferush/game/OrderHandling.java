@@ -11,7 +11,7 @@ import com.caferush.game.CustomerHandler.Customer;
 
 public class OrderHandling {
 
-    static Sound meow = Gdx.audio.newSound(Gdx.files.internal("sfx/meow.mp3"));
+    private static Sound meow;
     private static final int[][] menu_items = {
             {64,  0, 16, 16}, // hot choco
             {16,  0, 16, 16},  // espresso
@@ -46,6 +46,7 @@ public class OrderHandling {
         menuSheet = new Texture("images/Bar katto 2.0 icon sheet.png");
         ordersPopup = new ObjectMap<>();
         loadSpeechBubbleTextures();
+        loadSounds();
 
         orderImage = new TextureRegion[menu_items.length];
         for (int i = 0; i < menu_items.length; i++) {
@@ -57,6 +58,16 @@ public class OrderHandling {
     private void loadSpeechBubbleTextures() {
         speechBubbleModerate = new Texture("pngs/speech-bubble-moderatepatience.png");
         speechBubbleMinimal = new Texture("pngs/speech-bubble-minimalpatience.png");
+    }
+
+    private void loadSounds() {
+        try {
+            if (meow == null) {
+                meow = Gdx.audio.newSound(Gdx.files.internal("sfx/meow.mp3"));
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading order sounds: " + e.getMessage());
+        }
     }
 
     public void addOrder(TiledMapTileMapObject seat, int menuItemIndex, Customer customer) {
@@ -186,7 +197,10 @@ public class OrderHandling {
 
     // Complete an order for a customer
     public void completeOrder(Customer customer) {
-        meow.play();
+        if (meow != null) {
+            long soundId = meow.play();
+            meow.setVolume(soundId, 0.5f);
+        }
         OrderPosition orderToRemove = null;
         for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
             if (entry.value.customer == customer) {
@@ -204,6 +218,9 @@ public class OrderHandling {
         menuSheet.dispose();
         speechBubbleModerate.dispose();
         speechBubbleMinimal.dispose();
-        meow.dispose();
+        if (meow != null) {
+            meow.dispose();
+            meow = null;
+        }
     }
 }

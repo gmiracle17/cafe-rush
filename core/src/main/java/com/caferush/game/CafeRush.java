@@ -91,8 +91,8 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private int currentEarnings = 0;
     private int earningGoal = 300;
     private int earningGoalIncrement = 50;
-    private float dayTimer = 5; // 3 minutes per day
-    private float currentDayTime = 180;
+    private float dayTimer = 70f; // 3 minutes default
+    private float currentDayTime = dayTimer;
     private boolean isGameOver = false;
     private boolean isDayComplete = false;
     private BitmapFont font;
@@ -106,6 +106,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     }
 
     private void initializeGame() {
+        initializeGame(false);
+    }
+
+    private void initializeGame(boolean fromNextDay) {
         // Clear occupied seats map
         if (occupiedSeats == null) {
             occupiedSeats = new ObjectMap<>();
@@ -209,20 +213,25 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
         if (gameStatus == null) {
             gameStatus = new GameStatus(createStatusListener());
+        } else {
+            gameStatus.reloadAssets(); // Ensure textures are reloaded
         }
 
-        // Initialize day-related variables
-        currentDay = 1;
-        currentEarnings = 0;
-        earningGoal = 300;
+        // Only initialize day-related variables if not called from nextDay
+        if (!fromNextDay) {
+            currentDay = 1;
+            currentEarnings = 0;
+            earningGoal = 300;
+        }
+        
         currentDayTime = dayTimer;
         isGameOver = false;
+        isDayComplete = false;
 
         loadSounds();
     }
 
     private void disposeGameResources() {
-        // Dispose of all game resources
         if (tiledMap != null) tiledMap.dispose();
         if (tiledMapRenderer != null) ((OrthogonalTiledMapRenderer) tiledMapRenderer).dispose();
         if (frontTexture != null) frontTexture.dispose();
@@ -230,20 +239,23 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         if (sideTexture != null) sideTexture.dispose();
         if (customerHandler != null) {
             customerHandler.dispose();
+            customerHandler = null;
         }
         if (orderHandling != null) {
             orderHandling.dispose();
+            orderHandling = null;
         }
         if (inventory != null) {
             inventory.dispose();
+            inventory = null;
         }
-        // Clear occupied seats
         if (occupiedSeats != null) {
             occupiedSeats.clear();
         }
         Machines.dispose();
-        gameStatus.dispose();
-        // Don't dispose batch here as it's needed for menu rendering
+        if (gameStatus != null) {
+            gameStatus.dispose();
+        }
     }
 
     private void loadSounds() {
@@ -258,30 +270,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
         stateTime += delta;
-
-        // Update day timer if game is running
-        if (!isMenuActive && !isInstructionsActive && !isPaused && !isGameOver && !isDayComplete) {
-            currentDayTime -= delta;
-
-            // Check if day is over
-            if (currentDayTime <= 0) {
-                endDay();
-            }
-
-            // Check for customer timeouts
-            if (customerHandler != null) {
-                ArrayList<CustomerHandler.Customer> customersToRemove = new ArrayList<>();
-                for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-                    if (customer.isSeated && customer.remainingPatienceTime <= 0) {
-                        customersToRemove.add(customer);
-                    }
-                }
-                // Remove timed out customers
-                for (CustomerHandler.Customer customer : customersToRemove) {
-                    handleCustomerTimeout(customer);
-                }
-            }
-        }
 
         // Clear the screen at the start of each frame
         Gdx.gl.glClearColor(0.76f, 0.7f, 0.64f, 1);
@@ -305,12 +293,39 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             return;
         }
 
+        // Handle game over or day complete state
         if (isDayComplete || isGameOver) {
             gameStatus.render(batch);
             return;
         }
 
-        // Game is running - show controls
+        // Game is running - update game state
+        if (!isPaused) {
+            // Update day timer
+            currentDayTime -= delta;
+
+            // Check if day is over
+            if (currentDayTime <= 0) {
+                endDay();
+                return;  // Return after ending day to prevent further updates
+            }
+
+            // Update customers
+            if (customerHandler != null) {
+                ArrayList<CustomerHandler.Customer> customersToRemove = new ArrayList<>();
+                for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
+                    if (customer.isSeated && customer.remainingPatienceTime <= 0) {
+                        customersToRemove.add(customer);
+                    }
+                }
+                // Remove timed out customers
+                for (CustomerHandler.Customer customer : customersToRemove) {
+                    handleCustomerTimeout(customer);
+                }
+            }
+        }
+
+        // Rest of your render code for the game state...
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
@@ -683,6 +698,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                         if (foundType != null && foundType.equals(machineType)) {
                             // Try to collect the order
                             if (inventory.addOrder(machine.choice)) {
+                                System.out.println("Collected " + machine.choice + " from " + machine.name);
                                 // Clear the machine's display
                                 TiledMapTileLayer displayLayer = (TiledMapTileLayer) tiledMap.getLayers().get(machine.produceDisplayLayer);
                                 if (displayLayer != null && displayLayer.getCell(machine.displayX, machine.displayY) != null) {
@@ -729,6 +745,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                     // Calculate earnings based on customer patience
                     int earnings = calculateEarnings(customer);
                     currentEarnings += earnings;
+                    System.out.println("Customer served! Earned " + earnings + " coins. Total earnings: " + currentEarnings);
 
                     // Complete the order and handle customer
                     orderHandling.completeOrder(customer);
@@ -845,10 +862,12 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             }
         }
 
-        if (isDayComplete) {
+        // Add check for game over or day complete state
+        if (isGameOver || isDayComplete) {
             if (gameStatus.touchDown(screenX, screenY)) {
                 return true;
             }
+            return false;  // Return false if the click wasn't on a button
         }
 
         if (button != Input.Buttons.LEFT) {
@@ -1021,36 +1040,95 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return new GameStatus.StatusListener() {
             @Override
             public void onStartGame() {
+                // Stop and clean up existing systems first
+                if (customerHandler != null) {
+                    customerHandler.stopSpawning();
+                    customerHandler.dispose();
+                }
+                
+                // Reset game state
                 disposeGameResources();
                 initializeGame();
                 Machines.initializeSounds();
+                
+                // Reset all game states
+                isGameOver = false;
+                isDayComplete = false;
+                isPaused = false;
+                isMenuActive = false;
+                isInstructionsActive = false;
+                currentDay = 1;
+                currentEarnings = 0;
+                earningGoal = 300;
+                currentDayTime = dayTimer;
+                
+                // Initialize new customer handler and start spawning
+                customerHandler = new CustomerHandler(orderHandling);
+                if (customerHandler != null) {
+                    customerHandler.startSpawning();
+                    customerHandler.resumeAllCustomerTimers();
+                }
+                
+                // Initialize and resume all machines
+                if (machinesList != null) {
+                    for (Machines.Machine machine : machinesList) {
+                        machine.isBusy = false;
+                        machine.orderReady = false;
+                        machine.resumeProcess();
+                    }
+                }
             }
 
             @Override
             public void onResumeGame() {
                 isPaused = false;
-                // Resume all machines
-                for (Machines.Machine machine : machinesList) {
-                    machine.resumeProcess();
-                }
-                // Resume customer spawning and timers
-                if (customerHandler != null) {
-                    customerHandler.resumeSpawning();
-                    customerHandler.resumeAllCustomerTimers();
-                }
+                isDayComplete = false;
+                nextDay();
             }
+            
             @Override
-            public void onBackToMenu(){
-                isMenuActive = true;
-                isPaused = true;
-                // Pause all systems when leaving game
-                for (Machines.Machine machine : machinesList) {
-                    machine.pauseProcess();
-                }
+            public void onBackToMenu() {
+                // Stop and clean up existing systems first
                 if (customerHandler != null) {
                     customerHandler.stopSpawning();
-                    customerHandler.pauseAllCustomerTimers();
+                    customerHandler.dispose();
                 }
+                
+                // Reset game state
+                disposeGameResources();
+                initializeGame();
+                
+                // Reset to initial menu state
+                isGameOver = false;
+                isDayComplete = false;
+                isMenuActive = true;  // Make sure menu is active
+                isPaused = true;
+                isFirstStart = true;  // Reset to first start to hide Resume button
+                isInstructionsActive = false;  // Make sure instructions are not active
+                currentDay = 1;
+                currentEarnings = 0;
+                earningGoal = 300;
+                currentDayTime = dayTimer;
+                
+                // Initialize new systems but keep them paused
+                customerHandler = new CustomerHandler(orderHandling);
+                
+                // Initialize machines in paused state
+                if (machinesList != null) {
+                    for (Machines.Machine machine : machinesList) {
+                        machine.isBusy = false;
+                        machine.orderReady = false;
+                        machine.pauseProcess();
+                    }
+                }
+                
+                occupiedSeats.clear();
+
+                // Make sure game menu is initialized and reset its state
+                if (gameMenu != null) {
+                    gameMenu.dispose();
+                }
+                gameMenu = new GameMenu(createMenuListener());
             }
         };
     }
@@ -1060,8 +1138,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             isDayComplete = true;
             isPaused = true;
 
-            gameStatus.setGameOver(false);
-            // Stop the day timer to prevent further updates
+            if (gameStatus != null) {
+                gameStatus.setGameOver(false);
+                gameStatus.reloadAssets();
+            }
             currentDayTime = 0;
 
             // Pause all systems
@@ -1072,13 +1152,16 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 customerHandler.stopSpawning();
                 customerHandler.pauseAllCustomerTimers();
             }
+            // Remove automatic progression - let the menu handle it
 
         } else {
             isGameOver = true;
             isPaused = true;
 
-            gameStatus.setGameOver(true);
-            // Stop the day timer
+            if (gameStatus != null) {
+                gameStatus.setGameOver(true);
+                gameStatus.reloadAssets();
+            }
             currentDayTime = 0;
 
             if (customerHandler != null) {
@@ -1089,43 +1172,55 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     }
 
     private void nextDay() {
+        // Save current day and goal
         currentDay++;
-        currentEarnings = 0;
-        earningGoal += earningGoalIncrement;
-        currentDayTime = dayTimer;
-
+        earningGoal += earningGoalIncrement;  // Increment by 50
+        
+        // Stop all current systems
         if (customerHandler != null) {
             customerHandler.stopSpawning();
-            for (CustomerHandler.Customer customer : customerHandler.getCustomers()) {
-                orderHandling.completeOrder(customer);
-                if (customer.currentSeatId != -1) {
-                    occupiedSeats.remove(customer.currentSeatId);
-                }
-                customerHandler.removeCustomer(customer);
+            customerHandler.dispose();
+        }
+        
+        // Reset game resources but keep day number and goal
+        disposeGameResources();
+        initializeGame(true);  // Pass true to indicate this is called from nextDay
+        
+        // Reset earnings for new day
+        currentEarnings = 0;
+        currentDayTime = dayTimer;
+        
+        // Clear inventory
+        if (inventory != null) {
+            for (int i = 0; i < 8; i++) {  // 8 is MAX_SLOTS in Inventory
+                inventory.removeOrder(i);
             }
-            occupiedSeats.clear();
-
-            for (Machines.Machine machine : machinesList) {
-                machine.isBusy = false;
-                machine.orderReady = false;
-            }
-
-            customerHandler.startSpawning();
         }
 
+        // Reset character position
         characterPosition.set(757, 512);
         currentAnimation = walkDown;
 
+        // Reset all machines
+        if (machinesList != null) {
+            for (Machines.Machine machine : machinesList) {
+                machine.isBusy = false;
+                machine.orderReady = false;
+                machine.resumeProcess();
+            }
+        }
+
+        // Clear all seats and orders
+        occupiedSeats.clear();
+        
+        // Initialize new customer handler and start spawning
+        customerHandler = new CustomerHandler(orderHandling);
+        customerHandler.startSpawning();
+        
         isDayComplete = false;
         isPaused = false;
 
-        for (Machines.Machine machine : machinesList) {
-            machine.resumeProcess();
-        }
-        if (customerHandler != null) {
-            customerHandler.resumeSpawning();
-            customerHandler.resumeAllCustomerTimers();
-        }
+        System.out.println("Starting Day " + currentDay + " with earning goal: " + earningGoal);
     }
 
     private void clearOrderDisplaysForSeat(int seatId) {
@@ -1181,5 +1276,29 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             // Make sure to remove from the customer handler's list
             customerHandler.removeCustomer(customer);
         }
+    }
+
+    // Method to set day timer (in seconds)
+    public void setDayTimer(float seconds) {
+        this.dayTimer = seconds;
+        // Only update currentDayTime if we're starting a new day
+        if (currentDayTime >= this.dayTimer || currentDayTime <= 0) {
+            this.currentDayTime = seconds;
+        }
+    }
+
+    // Method to set current day time (in seconds)
+    public void setCurrentDayTime(float seconds) {
+        this.currentDayTime = seconds;
+    }
+
+    // Method to get current day timer setting
+    public float getDayTimer() {
+        return dayTimer;
+    }
+
+    // Method to get current day time remaining
+    public float getCurrentDayTime() {
+        return currentDayTime;
     }
 }
