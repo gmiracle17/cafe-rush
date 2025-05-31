@@ -866,7 +866,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="98" name="Inventory" width="16" height="16">
+ <layer id="98" name="Inventory" width="16" height="16" offsetx="0" offsety="-7">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

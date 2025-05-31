@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.audio.Sound;
 
 public class Instructions {
     private Texture instructionsTexture;
@@ -20,6 +21,8 @@ public class Instructions {
     }
 
     private InstructionListener listener;
+    private Sound buttonClickSound;
+    private float soundVolume = 0.5f;
 
     public Instructions(InstructionListener listener) {
         this.listener = listener;
@@ -36,11 +39,21 @@ public class Instructions {
         instructionsTexture = new Texture(Gdx.files.internal("instructions.png"));
         resumeButtonTexture = new Texture(Gdx.files.internal("resume.png"));
 
+        loadSounds();
+
         // Position buttons centered horizontally, with some vertical spacing
         int buttonWidth = 400;
         int buttonHeight = 100;
         resumeButtonPosition = new Vector2((screenWidth - buttonWidth) / 2f, screenHeight / 2f - 390);
         resumeButtonBounds = new Rectangle(resumeButtonPosition.x, resumeButtonPosition.y, buttonWidth, buttonHeight);
+    }
+
+    private void loadSounds() {
+        try {
+            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/buttonclick4.mp3"));
+        } catch (Exception e) {
+            System.err.println("Error loading sound files: " + e.getMessage());
+        }
     }
 
     public void render(SpriteBatch batch) {
@@ -53,6 +66,12 @@ public class Instructions {
         batch.end();
     }
 
+    private void playButtonSound() {
+        if (buttonClickSound != null) {
+            buttonClickSound.play(soundVolume);
+        }
+    }
+
     public void dispose() {
         if (instructionsTexture != null) instructionsTexture.dispose();
         if (resumeButtonTexture != null) resumeButtonTexture.dispose();
@@ -63,6 +82,7 @@ public class Instructions {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
         if (resumeButtonBounds.contains(screenX, invertedY)) {
+            playButtonSound();
             if (listener != null) listener.onBackToGame();
             return true;
         }

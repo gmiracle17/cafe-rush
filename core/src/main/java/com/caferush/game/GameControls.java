@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.audio.Sound;
 
 public class GameControls {
 
@@ -43,6 +44,9 @@ public class GameControls {
 
     private ControlsListener listener;
 
+    private Sound buttonClickSound;
+    private float soundVolume = 0.5f;
+
     public GameControls(ControlsListener listener) {
         this.listener = listener;
         this.day = 1;
@@ -54,6 +58,8 @@ public class GameControls {
         font.setColor(Color.WHITE);
 
         layout = new GlyphLayout();
+
+        loadSounds();
 
         leaveButtonTexture = new Texture(Gdx.files.internal("leave.png"));
         helpButtonTexture = new Texture(Gdx.files.internal("help.png"));
@@ -73,6 +79,14 @@ public class GameControls {
         helpButtonBounds = new Rectangle(helpButtonPosition.x, helpButtonPosition.y, buttonWidth, buttonHeight);
         pauseButtonBounds = new Rectangle(pauseButtonPosition.x, pauseButtonPosition.y, buttonWidth, buttonHeight - 7);
         soundButtonBounds = new Rectangle(soundButtonPosition.x, soundButtonPosition.y, buttonWidth, buttonHeight - 5);
+    }
+
+    private void loadSounds() {
+        try {
+            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/buttonclick4.mp3"));
+        } catch (Exception e) {
+            System.err.println("Error loading sound files: " + e.getMessage());
+        }
     }
 
     public void render(SpriteBatch batch) {
@@ -101,22 +115,32 @@ public class GameControls {
         batch.end();
     }
 
+    private void playButtonSound() {
+        if (buttonClickSound != null) {
+            buttonClickSound.play(soundVolume);
+        }
+    }
+
     public boolean touchDown(int screenX, int screenY) {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
         if (screenX >= 60 && screenX <= 160 && invertedY >= 20 && invertedY <= 90) {
+            playButtonSound();
             if (listener != null) listener.onLeaveGame();
         }
 
         if (screenX >= 1140 && screenX <= 1234 && invertedY >= 20 && invertedY <= 90) {
+            playButtonSound();
             if (listener != null) listener.onShowInstructions();
         }
 
         if (screenX >= 1022 && screenX <= 1095 && invertedY >= 20 && invertedY <= 90) {
+            playButtonSound();
             if (listener != null) listener.onControlBGM();
         }
 
         if (screenX >= 186 && screenX <= 258 && invertedY >= 20 && invertedY <= 90) {
+            playButtonSound();
             if (listener != null) Gdx.app.log("Game Controls", "Pause Button Clicked!");
         }
 
