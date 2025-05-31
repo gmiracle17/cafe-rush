@@ -102,19 +102,25 @@ public class CustomerHandler {
     public void addCustomer(float x, float y) {
         synchronized(customersLock) {
             Customer customer;
-            TextureRegion chosenSprite = null;
-            if (customerSprites.size > 0) {
-                chosenSprite = customerSprites.random();
-            }
-            // If boss sprite, assign shorter patience times
-            if (chosenSprite != null && isBossSprite(chosenSprite)) {
+            TextureRegion chosenSprite;
+
+            float bossSpawnChance = 0.30f; // 30% chance to spawn boss
+
+            if (MathUtils.random() < bossSpawnChance) {
+                // Spawn boss sprite
+                int bossIndex = MathUtils.random(2, 4); // boss indices
+                chosenSprite = customerSprites.get(bossIndex);
                 customer = new Customer(15f, 30f); // Boss patience times
             } else {
-                customer = new Customer(); // Regular customer
+                // Spawn regular sprite
+                int regIndex = MathUtils.random(0, 1); // regular indices
+                chosenSprite = customerSprites.get(regIndex);
+                customer = new Customer(); // Regular patience
             }
+
             customer.position.set(x, y);
             customer.sprite = chosenSprite;
-            // Initialize patience timers and values before adding to list
+
             customer.remainingPatienceTime = customer.getWaitingforSeatTime();
             customer.maxPatienceTime = customer.getWaitingforSeatTime();
             customer.remainingWaitingforSeatTime = customer.getWaitingforSeatTime();
@@ -123,18 +129,8 @@ public class CustomerHandler {
             customers.add(customer);
             System.out.println("New customer arrived!");
 
-            // Start spawn patience timer (not seated yet)
             customer.startWaitingforSeatTimer();
         }
-    }
-
-    private boolean isBossSprite(TextureRegion sprite) {
-        for (int i = 2; i <= 4; i++) {
-            if (customerSprites.get(i) == sprite) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void removeCustomer(Customer customer) {
@@ -549,6 +545,9 @@ public class CustomerHandler {
         if (pop != null) {
             pop.dispose();
             pop = null;
+        }
+        if (orderHandling != null) {
+            orderHandling.dispose();
         }
     }
 

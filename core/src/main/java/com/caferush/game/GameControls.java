@@ -22,16 +22,9 @@ public class GameControls {
     private final Vector2 helpButtonPosition;
     private final Vector2 soundButtonPosition;
 
-    private final BitmapFont font;
-    private final GlyphLayout layout;
     private boolean mute;
 
-    private int day;
-    private int goal;
-    private int earning;
-
     public interface ControlsListener {
-        void onLeaveGame();
         void onShowInstructions();
         void onControlBGM();
     }
@@ -43,15 +36,6 @@ public class GameControls {
 
     public GameControls(ControlsListener listener) {
         this.listener = listener;
-        this.day = 1;
-        this.goal = day * 100;
-        this.earning = 0;
-
-        font = new BitmapFont();
-        font.getData().setScale(1.9f, 1.4f);
-        font.setColor(Color.WHITE);
-
-        layout = new GlyphLayout();
 
         loadSounds();
 
@@ -89,8 +73,6 @@ public class GameControls {
         }
     }
 
-
-
     public boolean touchDown(int screenX, int screenY) {
         int invertedY = Gdx.graphics.getHeight() - screenY;
 
@@ -115,22 +97,11 @@ public class GameControls {
         return false;
     }
 
-    public void setEarning(int earning) {
-        if (earning < goal) {
-            this.earning = earning;
-        } else { // reaches goal
-            this.earning = 0;
-            this.day++;
-            this.goal = this.day * 100;
-        }
-    }
-
     public void setMute(boolean mute) {
         this.mute = mute;
     }
 
     public void dispose() {
-        font.dispose();
         helpButtonTexture.dispose();
         soundOnButtonTexture.dispose();
         soundOffButtonTexture.dispose();

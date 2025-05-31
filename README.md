@@ -74,15 +74,7 @@ Each machine operates as its own thread and is responsible for:
 
 This system is visualized on the game's Tiled map through custom tile layers and triggered by proximity or user clicks.
 
-```javascript
-import Component from 'my-project'
-
-function App() {
-  return <Component />
-}
-```
-
-**Customer Spawner Thread**
+<u>**Customer Spawner Thread**</u>
 
 This thread, found in `CustomerHandler` is responsible for the generation of customers for the cafe.
 
@@ -92,7 +84,7 @@ This thread, found in `CustomerHandler` is responsible for the generation of cus
   - No customer is waiting at the spawn point
   - The number of customers spawned is below the maximum number of customers set as part of the population control
 
-**Customer Patience Thread**
+<u>**Customer Patience Thread**</u>
 
 This thread is responsible for managing the patience timer for each customer which determines their waiting behavior
 
@@ -129,7 +121,7 @@ For example, `core:clean` removes `build` folder only from the `core` project.
 
 
 ## 🕹️ How to Play
-Press WASD to control waiter cat
+Press `WASD` to control waiter cat
 
 When customers arrive at the doorstep, click them, drag and drop them to their seats before their patience run out
 
@@ -143,23 +135,28 @@ Go near machines and press `[SPACE]` to create products
 
     3. Near Ovens to create croissants, bread, or donuts
 
-Choose product to create and wait for them to be prepared
+Click the product you wish to create and wait for them to be prepared
 
-Collect products once their prepared and deliver them to the customers before it is too late!
+Press `[E]` to collect products once they are prepared to store them in your inventory
 
-If your inventory is full and you need to throw away products, go near the trashbin 
+Press `[E]` again to deliver them to the customers before their patience runs out
+
+If your inventory is full and you need to throw away products, drag and drop items from your inventory to the trashbin 
+
+Reach the goal for the day before the timer runs out
 ## 📄 References
 
-Asset Pack References 🎨 
+**Asset Pack References**
 
 | Asset Pack | Usage |
 |------------|-------|
 | [Neko Cafe Asset Pack](https://hellorumin.itch.io/neko-cafe-asset-pack) | Background, Cat Characters, Machines |
+| [Neko Office Asset Pack](https://hellorumin.itch.io/neko-office-asset-pack) | Boss Cat Characters |
 | [Bar Katto](https://ivoryred.itch.io/bar-katto-16x16-icon-pack) | Snacks and Beverages |
 | [Food and little bit of kitchenware](https://piiixl.itch.io/food) | Trashbin |
 | [Modern Interiors](https://limezu.itch.io/moderninteriors) | Inventory and Boxes |
 
-SFX References 🔊 
+**SFX References**
 
 | Sound | Usage |
 |-------|-------|
@@ -169,7 +166,7 @@ SFX References 🔊
 | [Pop](https://pixabay.com/sound-effects/pop-39222/) | Customer Arrived |
 | [Blue Archive OST 47. Coffee Cats](https://www.youtube.com/watch?v=6iB1JvaE7_E) | Cafe BGM |
 
-Game Inspo 🎮 
+**Game Inspo**
 
 | Game | Description |
 |------|-------------|

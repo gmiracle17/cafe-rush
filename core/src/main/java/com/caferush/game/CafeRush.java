@@ -28,7 +28,6 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import java.util.ArrayList;
 import com.badlogic.gdx.utils.ObjectMap;
 
-
 // Main game class for Cafe Rush
 public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
@@ -44,9 +43,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private Music bgm;
     private boolean mute = false;
 
-    private Sound buttonClickSound;
-    private float soundVolume = 0.5f;
-
     private static final float VIRTUAL_WIDTH = 1000;
     private static final float VIRTUAL_HEIGHT = 800;
     private static final float CHARACTER_SPEED = 200f;
@@ -61,7 +57,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     // Position inventory in the middle bottom of the screen
     private static final float INVENTORY_X = VIRTUAL_WIDTH / 2 - (32 * 8 * 1.5f) / 2; // Center horizontally (considering 8 slots)
     private static final float INVENTORY_Y = 20;
-    private static final float INVENTORY_SCALE = 1.5f;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -91,7 +86,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
     private int currentEarnings = 0;
     private int earningGoal = 300;
     private int earningGoalIncrement = 50;
-    private float dayTimer = 70f; // 3 minutes default
+    private float dayTimer = 180f; // 3 minutes default
     private float currentDayTime = dayTimer;
     private boolean isGameOver = false;
     private boolean isDayComplete = false;
@@ -227,8 +222,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         currentDayTime = dayTimer;
         isGameOver = false;
         isDayComplete = false;
-
-        loadSounds();
     }
 
     private void disposeGameResources() {
@@ -255,14 +248,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         Machines.dispose();
         if (gameStatus != null) {
             gameStatus.dispose();
-        }
-    }
-
-    private void loadSounds() {
-        try {
-            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("sfx/buttonclick3.mp3"));
-        } catch (Exception e) {
-            System.err.println("Error loading sound files: " + e.getMessage());
         }
     }
 
@@ -463,9 +448,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         }
     }
 
-
     //animation from a sprite sheet
-
     private Animation<TextureRegion> createAnimation(Texture sheet) {
         TextureRegion[][] tmp = TextureRegion.split(sheet, sheet.getWidth() / 4, sheet.getHeight() / 2);
         TextureRegion[] frames = new TextureRegion[7];
@@ -493,7 +476,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         return new Animation<>(ANIMATION_FRAME_DURATION, flipped);
     }
 
-
     private boolean handleCharacterInput(float delta) {
         boolean moved = false;
         Vector2 oldPosition = new Vector2(characterPosition);
@@ -518,12 +500,10 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             currentAnimation = walkRight;
             moved = true;
         }
-
         if (moved && checkCollision()) {
             characterPosition.set(oldPosition);
             moved = false;
         }
-
         return moved;
     }
 
@@ -924,7 +904,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
                 worldPosition.y <= customer.position.y + height;
     }
 
-
     @Override public boolean keyUp(int keycode) { return false; }
     @Override public boolean keyTyped(char character) { return false; }
     @Override public boolean touchCancelled(int screenX, int screenY, int pointer, int button) { return false; }
@@ -980,20 +959,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
     private GameControls.ControlsListener createControlsListener() {
         return new GameControls.ControlsListener() {
-            @Override
-            public void onLeaveGame() {
-                isMenuActive = true;
-                isPaused = true;
-                // Pause all systems when leaving game
-                for (Machines.Machine machine : machinesList) {
-                    machine.pauseProcess();
-                }
-                if (customerHandler != null) {
-                    customerHandler.stopSpawning();
-                    customerHandler.pauseAllCustomerTimers();
-                }
-            }
-
             @Override
             public void onShowInstructions() {
                 if (!isInstructionsActive) {  // Only proceed if not already in instructions
@@ -1223,47 +1188,6 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
         System.out.println("Starting Day " + currentDay + " with earning goal: " + earningGoal);
     }
 
-    private void clearOrderDisplaysForSeat(int seatId) {
-        // Find and clear cells related to this seat
-        MapLayer seatLayer = tiledMap.getLayers().get("Seats");
-        if (seatLayer != null) {
-            for (MapObject obj : seatLayer.getObjects()) {
-                if (obj instanceof TiledMapTileMapObject) {
-                    TiledMapTileMapObject seat = (TiledMapTileMapObject) obj;
-                    int currentSeatId = seat.getProperties().get("Seat", -1, Integer.class);
-                    if (currentSeatId == seatId) {
-                        // Get seat position
-                        int tileX = (int)(seat.getX() * UNIT_SCALE / (16 * UNIT_SCALE));
-                        int tileY = (int)(seat.getY() * UNIT_SCALE / (16 * UNIT_SCALE));
-
-                        // Clear cells in a larger area around the seat position (7x7 area)
-                        for (int x = tileX - 3; x <= tileX + 3; x++) {
-                            for (int y = tileY - 3; y <= tileY + 3; y++) {
-                                // Clear any order-related cells at this position
-                                clearCellInLayer(x, y, "Orders");
-                                clearCellInLayer(x, y, "Order Bubbles");
-                                clearCellInLayer(x, y, "Order Icons");
-                                clearCellInLayer(x, y, "Patience Bubbles");
-                                clearCellInLayer(x, y, "Patience");
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private void clearCellInLayer(int x, int y, String layerName) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(layerName);
-        if (layer != null && x >= 0 && x < layer.getWidth() && y >= 0 && y < layer.getHeight()) {
-            TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-            if (cell != null) {
-                cell.setTile(null);
-            }
-        }
-    }
-
     // When a customer's patience runs out, make sure to free their seat
     private void handleCustomerTimeout(CustomerHandler.Customer customer) {
         if (customer.currentSeatId != -1) {
@@ -1276,29 +1200,5 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
             // Make sure to remove from the customer handler's list
             customerHandler.removeCustomer(customer);
         }
-    }
-
-    // Method to set day timer (in seconds)
-    public void setDayTimer(float seconds) {
-        this.dayTimer = seconds;
-        // Only update currentDayTime if we're starting a new day
-        if (currentDayTime >= this.dayTimer || currentDayTime <= 0) {
-            this.currentDayTime = seconds;
-        }
-    }
-
-    // Method to set current day time (in seconds)
-    public void setCurrentDayTime(float seconds) {
-        this.currentDayTime = seconds;
-    }
-
-    // Method to get current day timer setting
-    public float getDayTimer() {
-        return dayTimer;
-    }
-
-    // Method to get current day time remaining
-    public float getCurrentDayTime() {
-        return currentDayTime;
     }
 }

@@ -158,31 +158,6 @@ public class Machines {
         public void resumeProcess() {
             isPaused = false;
         }
-
-        public boolean collectOrder(int tileX, int tileY) {
-            if (!orderReady || !isBusy) return false;
-
-            // Check if click is within the display area (with a slightly larger detection area)
-            if (Math.abs(tileX - displayX) <= 1 && Math.abs(tileY - displayY) <= 1) {
-                if (inventory != null) {
-                    boolean added = inventory.addOrder(choice);
-                    if (added) {
-                        TiledMapTileLayer displayLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayLayer);
-                        displayLayer.getCell(displayX, displayY).setTile(null);
-
-                        String[] colors = {" Green ", " Yellow ", " Red "};
-                        for (String color : colors) {
-                            TiledMapTileLayer boxLayer = (TiledMapTileLayer) map.getLayers().get(this.produceDisplayBoxLayer + color + this.machineId);
-                            boxLayer.setVisible(false);
-                        }
-
-                        orderReady = false;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
     }
 
     public static class CoffeeMaker extends Machine {
