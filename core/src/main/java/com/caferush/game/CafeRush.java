@@ -439,7 +439,7 @@ public class CafeRush extends ApplicationAdapter implements InputProcessor {
 
             // Right side of inventory: Earnings on two lines
             float inventoryEndX = INVENTORY_X + (32 * 8 * 1.5f);  // Right edge of inventory
-            font.draw(batch, "Earnings: " + currentEarnings,
+            font.draw(batch, "Profit: " + currentEarnings,
                     inventoryEndX + 90, INVENTORY_Y + 65);
             font.draw(batch, "Goal: " + earningGoal,
                     inventoryEndX + 90, INVENTORY_Y + 40);
