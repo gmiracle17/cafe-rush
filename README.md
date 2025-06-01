@@ -1,4 +1,4 @@
-## Café Rush <img src="lwjgl3/src/main/resources/libgdx64.png" alt="Cafe Rush" height="25">
+# Café Rush <img src="lwjgl3/src/main/resources/libgdx64.png" alt="Cafe Rush" height="32">
 Café Rush is a fast-paced, time-management simulator built with [libGDX](https://libgdx.com/) and generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff)
 
 The game places players in the shoes of a café owner who must skillfully juggle taking orders, preparing drinks, baking treats, and managing customers, all while ensuring that everything runs smoothly in a chaotic and dynamic café environment. The game uses multithreading to simulate the simultaneous management of various café operations, offering a rich, immersive gameplay experience.
