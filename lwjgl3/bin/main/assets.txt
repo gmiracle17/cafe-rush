@@ -1,15 +1,20 @@
 Cafe Map.tmx
 Menu Background.png
+buttons/continue.png
 buttons/exit.png
 buttons/help.png
 buttons/leave.png
+buttons/menu.png
 buttons/pause.png
 buttons/play.png
+buttons/restart.png
 buttons/resume.png
 buttons/sound-off.png
 buttons/sound-on.png
 buttons/start.png
+congratulations message.png
 food-and-beverages.tsx
+gameover message.png
 images/Bar katto 2.0 icon sheet.png
 images/FOOD.png
 images/Interiors_free_16x16.png
@@ -30,12 +35,17 @@ pngs/Room_Builder_free_16x16.png
 pngs/cat-black-back.png
 pngs/cat-black-front.png
 pngs/cat-black-side.png
+pngs/cat-office-brown-front-idle.png
+pngs/cat-office-brown2-front-idle.png
+pngs/cat-office-white-front-idle.png
 pngs/cat-orange-back.png
 pngs/cat-orange-front.png
 pngs/cat-orange-side.png
 pngs/cat-waiter-back.png
 pngs/cat-waiter-front.png
 pngs/cat-waiter-side.png
+pngs/congratulations message.png
+pngs/gameover message.png
 pngs/neko-cafe-food.png
 pngs/neko-cafe-furnitures.png
 pngs/neko-cafe-tilemap.png
@@ -47,6 +57,8 @@ pngs/waiting-moderate.png
 pngs/waiting-normal.png
 sfx/angry-meow.mp3
 sfx/bgm.mp3
+sfx/buttonclick3.MP3
+sfx/buttonclick4.MP3
 sfx/ding-101492.mp3
 sfx/meow.mp3
 sfx/pop-39222.mp3

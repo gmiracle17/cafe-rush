@@ -6,7 +6,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
-import com.badlogic.gdx.utils.ObjectMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import com.caferush.game.CustomerHandler.Customer;
 
 public class OrderHandling {
@@ -37,7 +40,7 @@ public class OrderHandling {
 
     private final Texture orderBubble;
     private final TextureRegion[] orderImage;
-    private final ObjectMap<OrderPosition, OrderInfo> ordersPopup;
+    private final HashMap<OrderPosition, OrderInfo> ordersPopup;
     private final Texture menuSheet;
     private Texture speechBubbleModerate;
     private Texture speechBubbleMinimal;
@@ -45,7 +48,7 @@ public class OrderHandling {
     public OrderHandling() {
         orderBubble = new Texture(Gdx.files.internal("pngs/speech-bubble.png"));
         menuSheet = new Texture("images/Bar katto 2.0 icon sheet.png");
-        ordersPopup = new ObjectMap<>();
+        ordersPopup = new HashMap<>();
         loadSpeechBubbleTextures();
         loadSounds();
 
@@ -96,6 +99,23 @@ public class OrderHandling {
             this.orderY = oy;
             this.seatId = id;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+            OrderPosition that = (OrderPosition) obj;
+            return Float.compare(that.seatX, seatX) == 0 &&
+                Float.compare(that.seatY, seatY) == 0 &&
+                Float.compare(that.orderX, orderX) == 0 &&
+                Float.compare(that.orderY, orderY) == 0 &&
+                seatId == that.seatId;
+        }
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(seatX, seatY, orderX, orderY, seatId);
+        }
     }
 
     public static class OrderInfo {
@@ -114,9 +134,9 @@ public class OrderHandling {
         float scaledWidth = orderBubble.getWidth() * bubbleScale;
         float scaledHeight = orderBubble.getHeight() * bubbleScale;
 
-        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
-            OrderPosition seatPos = entry.key;
-            OrderInfo orderInfo = entry.value;
+        for (Map.Entry<OrderPosition, OrderInfo> entry : ordersPopup.entrySet()) {
+            OrderPosition seatPos = entry.getKey();
+            OrderInfo orderInfo = entry.getValue();
             Customer customer = orderInfo.customer;
             TextureRegion icon = orderImage[orderInfo.menuItemIndex];
 
@@ -167,20 +187,24 @@ public class OrderHandling {
     }
 
     public void removeOrderByCustomer(Customer customer) {
-        // Find and remove any orders associated with this customer
-        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
-            if (entry.value.customer == customer) {
-                ordersPopup.remove(entry.key);
-                break;
-            }
+    // Find and remove any orders associated with this customer
+    OrderPosition keyToRemove = null;
+    for (Map.Entry<OrderPosition, OrderInfo> entry : ordersPopup.entrySet()) {
+        if (entry.getValue().customer == customer) {
+            keyToRemove = entry.getKey();
+            break;
         }
     }
+    if (keyToRemove != null) {
+        ordersPopup.remove(keyToRemove);
+    }
+}
 
     // Get the order for a specific customer
     public String getOrderForCustomer(Customer customer) {
-        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
-            if (entry.value.customer == customer) {
-                int menuIndex = entry.value.menuItemIndex;
+        for (Map.Entry<OrderPosition, OrderInfo> entry : ordersPopup.entrySet()) {
+            if (entry.getValue().customer == customer) {
+                int menuIndex = entry.getValue().menuItemIndex;
                 switch(menuIndex) {
                     case 0: return "hot_choco";
                     case 1: return "espresso";
@@ -202,9 +226,9 @@ public class OrderHandling {
     // Complete an order for a customer
     public void completeOrder(Customer customer) {
         OrderPosition orderToRemove = null;
-        for (ObjectMap.Entry<OrderPosition, OrderInfo> entry : ordersPopup) {
-            if (entry.value.customer == customer) {
-                orderToRemove = entry.key;
+        for (Map.Entry<OrderPosition, OrderInfo> entry : ordersPopup.entrySet()) {
+            if (entry.getValue().customer == customer) {
+                orderToRemove = entry.getKey();
                 break;
             }
         }
@@ -226,17 +250,17 @@ public class OrderHandling {
     }
 
     public void dispose() {
-        orderBubble.dispose();
-        menuSheet.dispose();
-        speechBubbleModerate.dispose();
-        speechBubbleMinimal.dispose();
-        if (meow != null) {
-            meow.dispose();
-            meow = null;
+            orderBubble.dispose();
+            menuSheet.dispose();
+            speechBubbleModerate.dispose();
+            speechBubbleMinimal.dispose();
+            if (meow != null) {
+                meow.dispose();
+                meow = null;
+            }
+            if (angryMeow != null) {
+                angryMeow.dispose();
+                angryMeow = null;
+            }
         }
-        if (angryMeow != null) {
-            angryMeow.dispose();
-            angryMeow = null;
-        }
-    }
 }
