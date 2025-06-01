@@ -252,8 +252,22 @@ public class Inventory {
 
     public void dispose() {
         if (menuSheet != null) {
-            menuSheet.dispose();
+        menuSheet.dispose();
+    }
+    
+    if (slots != null) {
+        slots.clear();
+    }
+    
+    if (orderImages != null) {
+        for (int i = 0; i < orderImages.length; i++) {
+            orderImages[i] = null;
         }
+    }
+
+    isDragging = false;
+    draggedSlotIndex = -1;
+    
     }
 
     private static class InventorySlot {

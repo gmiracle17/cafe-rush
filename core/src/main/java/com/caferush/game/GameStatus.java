@@ -129,6 +129,7 @@ public class GameStatus {
     }
 
     public void dispose() {
+        
         disposeTextures();
         if (buttonClickSound != null) {
             buttonClickSound.dispose();

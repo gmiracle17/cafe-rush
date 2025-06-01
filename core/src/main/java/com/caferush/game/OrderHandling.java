@@ -228,6 +228,7 @@ public class OrderHandling {
     public void dispose() {
         orderBubble.dispose();
         menuSheet.dispose();
+        ordersPopup.clear();
         speechBubbleModerate.dispose();
         speechBubbleMinimal.dispose();
         if (meow != null) {

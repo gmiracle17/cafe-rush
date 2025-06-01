@@ -508,6 +508,7 @@ public class CustomerHandler {
 
     public void dispose() {
         isRunning = false;
+        canSpawnNewCustomer = false;
 
         if (spawnerThread != null) {
             spawnerThread.interrupt();
