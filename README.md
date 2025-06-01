@@ -1,15 +1,15 @@
-
-<p style="display: flex; align-items: flex-start; gap: 10px;">
-  <img src="lwjgl3/src/main/resources/libgdx64.png" alt="Cafe Rush" height="40" style="margin-top: 10px;">
-  <span style="font-size: 2em; font-weight: bold; margin-top: 10px;">Cafe Rush</span>
-</p>
-
+# Café Rush <img src="lwjgl3/src/main/resources/libgdx64.png" alt="Cafe Rush" height="32">
 Café Rush is a fast-paced, time-management simulator built with [libGDX](https://libgdx.com/) and generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff)
 
 The game places players in the shoes of a café owner who must skillfully juggle taking orders, preparing drinks, baking treats, and managing customers, all while ensuring that everything runs smoothly in a chaotic and dynamic café environment. The game uses multithreading to simulate the simultaneous management of various café operations, offering a rich, immersive gameplay experience.
 
 This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
 
+## 🛠 Tech Stack
+
+- **Framework:** LibGDX
+- **Language:** Java 21
+- **Gradle:** 8.14
 
 ## ✨ Features
 
@@ -18,6 +18,7 @@ This project was generated with a template including simple application launcher
 - Unique customer moods and patience levels
 - Interactive machines: CoffeeMaker, Oven, PastryMaker
 - Background music and sound effects
+
 ## 💻 Run Locally
 
 Clone the project
@@ -30,6 +31,13 @@ Go to the project directory
 
 ```bash
   cd cafe-rush
+```
+
+Check if you are using the correct gradle and java version. If not, download [Gradle 8.14](https://gradle.org/install/) and/or [Java 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
+
+```bash
+  gradlew -v
+  java -version
 ```
 
 Import the project into your IDE (ideally IntelliJ)
@@ -47,12 +55,6 @@ Edit configurations
         - Main class: com.caferush.game.lwjgl3.DesktopLauncher
         - Classpath: cafe-rush.lwjgl3.main
         - JDK: Select Java 21
-
-## 🛠 Tech Stack
-
-- **Framework:** LibGDX
-- **Language:** Java 21
-
 
 ## 📂 Code Structure
 
